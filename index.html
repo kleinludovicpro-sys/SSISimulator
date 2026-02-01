@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Graphique d’occupation des voies (A3)</title>
+  <style>
+    :root{
+      --bg:#ffffff;
+      --ink:#111;
+      --grid:#d7d7d7;
+      --grid-strong:#a9a9a9;
+      --row:#efefef;
+      --bar:#1f6feb;
+      --bar2:#d73a49;
+      --barText:#fff;
+      --font: 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --leftPad: 90; /* px reserved for track labels in SVG */
+      --topPad: 40;  /* px reserved for header */
+      --rowH: 46;    /* px per track row */
+      --barH: 22;    /* px bar height */
+      --barYInset: 12; /* px from top of row */
+      --hoursSpan: 8; /* default duration in hours */
+      --pxPerMin: 3.0; /* 30min = 90px ; 60min = 180px */
+    }
+
+    body { margin: 0; background: var(--bg); color: var(--ink); font: var(--font); }
+    header{
+      padding: 10px 14px;
+      border-bottom: 1px solid #eee;
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+      align-items:flex-end;
+    }
+    .group { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+    label { display:flex; flex-direction:column; gap:4px; font-size: 12px; }
+    input, select, button {
+      font: inherit;
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: #fff;
+    }
+    button { cursor: pointer; border-color:#bbb; }
+    button.primary { background: #111; color:#fff; border-color:#111; }
+    button.preset { background:#f6f6f6; }
+    .hint { font-size: 12px; opacity: .8; margin-left:auto; }
+    main{ padding: 12px 14px; }
+
+    .layout{
+      display:grid;
+      grid-template-columns: 380px 1fr;
+      gap: 14px;
+      align-items:start;
+    }
+    @media (max-width: 1100px){
+      .layout{ grid-template-columns: 1fr; }
+      .hint{ margin-left: 0; width:100%; }
+    }
+
+    .panel{
+      border:1px solid #eee;
+      border-radius:14px;
+      padding:12px;
+      background:#fff;
+      box-shadow: 0 1px 6px rgba(0,0,0,.04);
+    }
+    .panel h2{ margin:0 0 10px; font-size: 14px; }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; }
+    .row > label{ flex: 1; min-width: 120px; }
+    .row > label.small{ flex: 0 0 110px; }
+
+    table{
+      width:100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 12px;
+    }
+    th, td{ border-bottom: 1px solid #eee; padding: 6px 6px; text-align:left; }
+    th{ font-weight:600; }
+    td.actions{ width: 90px; }
+    td.actions button{ padding:4px 6px; border-radius:8px; }
+
+    .svgWrap{
+      border:1px solid #eee;
+      border-radius:14px;
+      padding:10px;
+      background:#fff;
+      overflow:auto;
+      box-shadow: 0 1px 6px rgba(0,0,0,.04);
+    }
+
+    /* PRINT A3 */
+    @media print{
+      header, .panel { display:none !important; }
+      main{ padding:0 !important; }
+      .layout{ grid-template-columns: 1fr !important; gap:0 !important; }
+      .svgWrap{
+        border:none !important;
+        border-radius:0 !important;
+        box-shadow:none !important;
+        padding:0 !important;
+        overflow:visible !important;
+      }
+    }
+    @page { size: A3 landscape; margin: 10mm; }
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="group">
+    <label>
+      Plage début
+      <input id="rangeStart" type="time" value="04:00" step="60">
+    </label>
+    <label>
+      Plage fin
+      <input id="rangeEnd" type="time" value="12:00" step="60">
+    </label>
+    <div class="group" style="gap:8px;">
+      <button class="preset" id="p1">Preset 04→12</button>
+      <button class="preset" id="p2">Preset 20→04</button>
+      <button class="preset" id="p3">Preset 22→20</button>
+    </div>
+  </div>
+
+  <div class="group">
+    <label>
+      Échelle (px / 30 min)
+      <select id="scale">
+        <option value="70">70</option>
+        <option value="90" selected>90</option>
+        <option value="110">110</option>
+        <option value="130">130</option>
+      </select>
+    </label>
+    <button class="primary" onclick="window.print()">Imprimer A3</button>
+  </div>
+
+  <div class="hint">
+    Astuce : si départ &lt; arrivée, le train est considéré comme passant minuit.
+  </div>
+</header>
+
+<main>
+  <div class="layout">
+    <section class="panel">
+      <h2>Ajouter un train</h2>
+      <div class="row">
+        <label>
+          N° Train
+          <input id="trainNo" placeholder="ex: 866123" />
+        </label>
+        <label class="small">
+          Voie
+          <select id="track">
+            <optgroup label="Voies principales">
+              <option>A</option><option>B</option><option>C</option><option>D</option><option>E</option>
+            </optgroup>
+            <optgroup label="Voies de service">
+              <option>T6</option><option>9</option><option>11</option><option>13</option>
+            </optgroup>
+          </select>
+        </label>
+      </div>
+
+      <div class="row" style="margin-top:8px;">
+        <label class="small">
+          Arrivée
+          <input id="arr" type="time" value="09:04" step="60">
+        </label>
+        <label class="small">
+          Départ
+          <input id="dep" type="time" value="09:08" step="60">
+        </label>
+        <label>
+          Couleur (option)
+          <select id="color">
+            <option value="auto" selected>Auto</option>
+            <option value="#1f6feb">Bleu</option>
+            <option value="#d73a49">Rouge</option>
+            <option value="#2da44e">Vert</option>
+            <option value="#8250df">Violet</option>
+            <option value="#b35900">Orange</option>
+            <option value="#111111">Noir</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="row" style="margin-top:10px;">
+        <button class="primary" id="addBtn">Ajouter</button>
+        <button id="clearBtn">Tout effacer</button>
+        <button id="demoBtn">Démo</button>
+      </div>
+
+      <h2 style="margin-top:16px;">Liste</h2>
+      <table>
+        <thead>
+          <tr><th>Train</th><th>Voie</th><th>Arr</th><th>Dep</th><th></th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </section>
+
+    <section class="svgWrap">
+      <div id="svgHost"></div>
+    </section>
+  </div>
+</main>
+
+<script>
+(() => {
+  const TRACKS = ["A","B","C","D","E","T6","9","11","13"];
+
+  const els = {
+    rangeStart: document.getElementById("rangeStart"),
+    rangeEnd: document.getElementById("rangeEnd"),
+    scale: document.getElementById("scale"),
+    trainNo: document.getElementById("trainNo"),
+    track: document.getElementById("track"),
+    arr: document.getElementById("arr"),
+    dep: document.getElementById("dep"),
+    color: document.getElementById("color"),
+    tbody: document.getElementById("tbody"),
+    svgHost: document.getElementById("svgHost"),
+    addBtn: document.getElementById("addBtn"),
+    clearBtn: document.getElementById("clearBtn"),
+    demoBtn: document.getElementById("demoBtn"),
+    p1: document.getElementById("p1"),
+    p2: document.getElementById("p2"),
+    p3: document.getElementById("p3")
+  };
+
+  // Storage
+  const KEY = "graphique_voies_v1";
+  let trains = load() ?? [];
+
+  function load(){
+    try { return JSON.parse(localStorage.getItem(KEY)); } catch { return null; }
+  }
+  function save(){
+    localStorage.setItem(KEY, JSON.stringify(trains));
+  }
+
+  function hhmmToMinutes(hhmm){
+    // "09:04" -> 544
+    const [h,m] = hhmm.split(":").map(Number);
+    return h*60 + m;
+  }
+  function minutesToHHMM(total){
+    total = ((total % 1440) + 1440) % 1440;
+    const h = String(Math.floor(total/60)).padStart(2,"0");
+    const m = String(total%60).padStart(2,"0");
+    return `${h}:${m}`;
+  }
+
+  function computeRange(){
+    const start = hhmmToMinutes(els.rangeStart.value);
+    const end0 = hhmmToMinutes(els.rangeEnd.value);
+    // if end <= start => crosses midnight (e.g. 20:00 -> 04:00)
+    const end = (end0 <= start) ? end0 + 1440 : end0;
+    return { start, end, durationMin: end - start };
+  }
+
+  function autoColor(i){
+    // stable palette
+    const palette = ["#1f6feb","#d73a49","#2da44e","#8250df","#b35900","#0f766e","#b91c1c","#334155"];
+    return palette[i % palette.length];
+  }
+
+  function normalizeTrain(t){
+    const arr = hhmmToMinutes(t.arr);
+    let dep = hhmmToMinutes(t.dep);
+    // If departure earlier than arrival => assume it crosses midnight
+    if(dep < arr) dep += 1440;
+    return { ...t, arrMin: arr, depMin: dep };
+  }
+
+  function inRange(tNorm, range){
+    // Map train times into same timeline window:
+    // Consider that train may happen after midnight relative to start.
+    // We choose the occurrence that best overlaps with range.
+    const { start, end } = range;
+
+    // Generate possible shifted intervals (0 or +1440) to align with range
+    const candidates = [];
+    for(const shift of [0, 1440]){
+      const a = tNorm.arrMin + shift;
+      const d = tNorm.depMin + shift;
+      candidates.push({a,d});
+    }
+    // pick the candidate that intersects range the most (or at least is closest)
+    let best = null;
+    let bestScore = -Infinity;
+    for(const c of candidates){
+      const inter = Math.max(0, Math.min(end,c.d) - Math.max(start,c.a));
+      const dist = Math.min(Math.abs(c.a - start), Math.abs(c.d - end));
+      const score = inter*10 - dist; // prefer intersection
+      if(score > bestScore){ bestScore = score; best = c; }
+    }
+    return best;
+  }
+
+  function render(){
+    renderTable();
+    renderSVG();
+  }
+
+  function renderTable(){
+    els.tbody.innerHTML = "";
+    trains.forEach((t, idx) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escapeHtml(t.no || "")}</td>
+        <td>${escapeHtml(t.track)}</td>
+        <td>${escapeHtml(t.arr)}</td>
+        <td>${escapeHtml(t.dep)}</td>
+        <td class="actions">
+          <button data-edit="${idx}">Édit</button>
+          <button data-del="${idx}">Suppr</button>
+        </td>`;
+      els.tbody.appendChild(tr);
+    });
+
+    els.tbody.querySelectorAll("button[data-del]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const i = Number(btn.getAttribute("data-del"));
+        trains.splice(i,1);
+        save(); render();
+      });
+    });
+
+    els.tbody.querySelectorAll("button[data-edit]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const i = Number(btn.getAttribute("data-edit"));
+        const t = trains[i];
+        els.trainNo.value = t.no || "";
+        els.track.value = t.track;
+        els.arr.value = t.arr;
+        els.dep.value = t.dep;
+        els.color.value = t.color || "auto";
+        // Replace on next add
+        trains.splice(i,1);
+        save(); render();
+      });
+    });
+  }
+
+  function renderSVG(){
+    const range = computeRange();
+    const pxPer30 = Number(els.scale.value);
+    const pxPerMin = pxPer30 / 30;
+
+    const leftPad = Number(getCSS("--leftPad"));
+    const topPad = Number(getCSS("--topPad"));
+    const rowH = Number(getCSS("--rowH"));
+    const barH = Number(getCSS("--barH"));
+    const barYInset = Number(getCSS("--barYInset"));
+
+    const width = leftPad + Math.ceil(range.durationMin * pxPerMin) + 40;
+    const height = topPad + TRACKS.length * rowH + 30;
+
+    const svg = svgEl("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: width,
+      height: height,
+      viewBox: `0 0 ${width} ${height}`,
+      style: "display:block;"
+    });
+
+    // Title
+    const title = `Graphique d’occupation des voies — ${els.rangeStart.value} → ${els.rangeEnd.value}`;
+    svg.appendChild(svgText(14, 18, title, { "font-size":"14", "font-weight":"700", fill:"#111" }));
+    svg.appendChild(svgText(14, 34, "Traits : 30 min (heures renforcées) — Chevauchement visuel autorisé", { "font-size":"11", fill:"#444" }));
+
+    // Background
+    svg.appendChild(svgEl("rect", { x:0, y:0, width, height, fill:"#fff" }));
+
+    // Grid area
+    const gridX0 = leftPad;
+    const gridY0 = topPad;
+    const gridW = range.durationMin * pxPerMin;
+    const gridH = TRACKS.length * rowH;
+
+    // Border of grid
+    svg.appendChild(svgEl("rect", { x:gridX0, y:gridY0, width:gridW, height:gridH, fill:"#fff", stroke:"#bbb" }));
+
+    // Horizontal rows + labels
+    TRACKS.forEach((track, r) => {
+      const y = gridY0 + r*rowH;
+      // row line
+      svg.appendChild(svgEl("line", { x1:gridX0, y1:y, x2:gridX0+gridW, y2:y, stroke:"#e5e5e5" }));
+      // label
+      svg.appendChild(svgText(14, y + rowH/2 + 4, `Voie ${track}`, { "font-size":"12", "font-weight":"700", fill:"#111" }));
+    });
+    // bottom row line
+    svg.appendChild(svgEl("line", { x1:gridX0, y1:gridY0+gridH, x2:gridX0+gridW, y2:gridY0+gridH, stroke:"#e5e5e5" }));
+
+    // Vertical grid (every 30 min)
+    const startMin = range.start;
+    for(let m = 0; m <= range.durationMin; m += 30){
+      const x = gridX0 + m * pxPerMin;
+      const absolute = startMin + m; // can be >1440
+      const hhmm = minutesToHHMM(absolute);
+
+      const isHour = (absolute % 60 === 0);
+      svg.appendChild(svgEl("line", {
+        x1:x, y1:gridY0, x2:x, y2:gridY0+gridH,
+        stroke: isHour ? "#a9a9a9" : "#d7d7d7",
+        "stroke-width": isHour ? 1.5 : 1
+      }));
+
+      // time label on top
+      if(isHour){
+        svg.appendChild(svgText(x + 2, gridY0 - 8, hhmm.slice(0,2) + "h", { "font-size":"11", "font-weight":"700", fill:"#111" }));
+      } else {
+        svg.appendChild(svgText(x + 2, gridY0 - 8, hhmm.slice(3,5), { "font-size":"10", fill:"#666" }));
+      }
+    }
+
+    // Draw trains
+    const normalized = trains.map(normalizeTrain);
+    normalized.forEach((t, i) => {
+      const row = TRACKS.indexOf(t.track);
+      if(row < 0) return;
+
+      const aligned = inRange(t, range);
+      if(!aligned) return;
+
+      // clip to range
+      const a = Math.max(range.start, aligned.a);
+      const d = Math.min(range.end, aligned.d);
+      if(d <= a) return;
+
+      const x = gridX0 + (a - range.start) * pxPerMin;
+      const w = (d - a) * pxPerMin;
+
+      const yRow = gridY0 + row*rowH;
+      const y = yRow + barYInset;
+
+      const fill = (t.color && t.color !== "auto") ? t.color : autoColor(i);
+
+      // bar
+      svg.appendChild(svgEl("rect", {
+        x, y, width:w, height:barH,
+        rx: 6, ry: 6,
+        fill, opacity: 0.92
+      }));
+
+      // outline
+      svg.appendChild(svgEl("rect", {
+        x, y, width:w, height:barH,
+        rx: 6, ry: 6,
+        fill:"none", stroke:"rgba(0,0,0,.25)"
+      }));
+
+      // label
+      const label = `${t.no || ""} ${t.arr}–${t.dep}`.trim();
+      // Put label only if bar wide enough
+      if(w >= 60){
+        svg.appendChild(svgText(x + 6, y + 15, label, { "font-size":"11", "font-weight":"700", fill:"#fff" }));
+      } else {
+        // tiny bars: show a small marker + tooltip
+        const dotX = x + Math.max(4, w/2);
+        svg.appendChild(svgEl("circle", { cx: dotX, cy: y + barH/2, r: 3, fill:"#fff" }));
+      }
+
+      // tooltip
+      const titleEl = svgEl("title", {});
+      titleEl.textContent = `Train ${t.no || ""}\nVoie ${t.track}\nArr ${t.arr} / Dep ${t.dep}`;
+      svg.lastChild.appendChild(titleEl); // attach to last drawn element
+    });
+
+    // Legend mini
+    svg.appendChild(svgText(14, height - 10, "Impression : A3 paysage (marges 10mm).", { "font-size":"11", fill:"#444" }));
+
+    els.svgHost.innerHTML = "";
+    els.svgHost.appendChild(svg);
+  }
+
+  function getCSS(varName){
+    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  }
+
+  function svgEl(tag, attrs){
+    const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for(const [k,v] of Object.entries(attrs || {})) el.setAttribute(k, String(v));
+    return el;
+  }
+  function svgText(x,y,text,attrs){
+    const t = svgEl("text", { x, y, ...attrs });
+    t.textContent = text;
+    return t;
+  }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, ch => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[ch]));
+  }
+
+  // Events
+  els.addBtn.addEventListener("click", () => {
+    const no = els.trainNo.value.trim();
+    const track = els.track.value;
+    const arr = els.arr.value;
+    const dep = els.dep.value;
+    if(!track || !arr || !dep){
+      alert("Voie + arrivée + départ sont obligatoires.");
+      return;
+    }
+    trains.push({
+      no, track, arr, dep,
+      color: els.color.value || "auto"
+    });
+    save();
+    // Keep train number for faster entry? up to you. We'll clear times only.
+    els.arr.value = arr;
+    els.dep.value = dep;
+    render();
+  });
+
+  els.clearBtn.addEventListener("click", () => {
+    if(confirm("Tout effacer ?")){
+      trains = [];
+      save();
+      render();
+    }
+  });
+
+  els.demoBtn.addEventListener("click", () => {
+    trains = [
+      { no:"TR 1", track:"B", arr:"09:04", dep:"09:08", color:"auto" },
+      { no:"TR 2", track:"B", arr:"09:06", dep:"09:20", color:"#d73a49" },
+      { no:"TR 3", track:"T6", arr:"07:10", dep:"07:55", color:"auto" },
+      { no:"TR 4", track:"A", arr:"23:10", dep:"00:25", color:"auto" },
+    ];
+    save(); render();
+  });
+
+  els.scale.addEventListener("change", render);
+  els.rangeStart.addEventListener("change", render);
+  els.rangeEnd.addEventListener("change", render);
+
+  els.p1.addEventListener("click", () => { els.rangeStart.value="04:00"; els.rangeEnd.value="12:00"; render(); });
+  els.p2.addEventListener("click", () => { els.rangeStart.value="20:00"; els.rangeEnd.value="04:00"; render(); });
+  els.p3.addEventListener("click", () => { els.rangeStart.value="22:00"; els.rangeEnd.value="20:00"; render(); });
+
+  // Initial render
+  render();
+})();
+</script>
+</body>
+</html>
