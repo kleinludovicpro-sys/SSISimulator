@@ -1,555 +1,634 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Graphique d’occupation des voies (A3)</title>
-  <style>
-    :root{
-      --bg:#ffffff;
-      --ink:#111;
-      --grid:#d7d7d7;
-      --grid-strong:#a9a9a9;
-      --row:#efefef;
-      --bar:#1f6feb;
-      --bar2:#d73a49;
-      --barText:#fff;
-      --font: 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      --leftPad: 90; /* px reserved for track labels in SVG */
-      --topPad: 40;  /* px reserved for header */
-      --rowH: 46;    /* px per track row */
-      --barH: 22;    /* px bar height */
-      --barYInset: 12; /* px from top of row */
-      --hoursSpan: 8; /* default duration in hours */
-      --pxPerMin: 3.0; /* 30min = 90px ; 60min = 180px */
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulateur SSI - Gare de Bayonne</title>
+    <style>
+        :root {
+            --sdi-bg: #e6dfd6;
+            --cmsi-bg: #808285;
+            --cmsi-panel: #5b6065;
+            --led-off: #444;
+            --led-red: #ff2a2a;
+            --led-green: #39ff14;
+            --led-yellow: #ffcc00;
+            --btn-blue: #4671bc;
+            --lcd-green: #689f38;
+        }
+        body { margin: 0; padding: 20px; font-family: 'Segoe UI', sans-serif; background-color: #2c3e50; color: white; display: flex; flex-direction: column; align-items: center; }
+        
+        #btn-retour { display: none; position: absolute; top: 15px; right: 20px; padding: 10px 15px; background: #34495e; color: white; border: 2px solid white; cursor: pointer; border-radius: 5px; font-weight: bold; z-index: 500; }
+        #menu { background: white; color: black; padding: 30px; border-radius: 8px; text-align: center; margin-bottom: 20px; width: 600px; }
+        .btn-menu { display: block; width: 100%; padding: 15px; margin: 10px 0; font-size: 18px; cursor: pointer; border: none; border-radius: 5px; color: white; font-weight: bold; }
+        .btn-normal { background: #27ae60; } .btn-feu { background: #e74c3c; } .btn-derangement { background: #f39c12; }
 
-    body { margin: 0; background: var(--bg); color: var(--ink); font: var(--font); }
-    header{
-      padding: 10px 14px;
-      border-bottom: 1px solid #eee;
-      display:flex;
-      gap:14px;
-      flex-wrap:wrap;
-      align-items:flex-end;
-    }
-    .group { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
-    label { display:flex; flex-direction:column; gap:4px; font-size: 12px; }
-    input, select, button {
-      font: inherit;
-      padding: 6px 8px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      background: #fff;
-    }
-    button { cursor: pointer; border-color:#bbb; }
-    button.primary { background: #111; color:#fff; border-color:#111; }
-    button.preset { background:#f6f6f6; }
-    .hint { font-size: 12px; opacity: .8; margin-left:auto; }
-    main{ padding: 12px 14px; }
+        #evac-banner { display: none; background: #e74c3c; color: white; width: 1000px; padding: 15px 0; text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 10px; border-radius: 5px; animation: flash 1s infinite; position: relative; }
+        @keyframes flash { 0%, 100% { background: #e74c3c; } 50% { background: #c0392b; } }
+        #skip-time { position: absolute; right: 20px; top: 15px; font-size: 12px; padding: 5px; cursor: pointer; background: black; color: white; border: none; }
 
-    .layout{
-      display:grid;
-      grid-template-columns: 380px 1fr;
-      gap: 14px;
-      align-items:start;
-    }
-    @media (max-width: 1100px){
-      .layout{ grid-template-columns: 1fr; }
-      .hint{ margin-left: 0; width:100%; }
-    }
+        #ssi-container { display: none; width: 1000px; flex-direction: column; gap: 10px; }
 
-    .panel{
-      border:1px solid #eee;
-      border-radius:14px;
-      padding:12px;
-      background:#fff;
-      box-shadow: 0 1px 6px rgba(0,0,0,.04);
-    }
-    .panel h2{ margin:0 0 10px; font-size: 14px; }
-    .row{ display:flex; gap:10px; flex-wrap:wrap; }
-    .row > label{ flex: 1; min-width: 120px; }
-    .row > label.small{ flex: 0 0 110px; }
+        /* ================= SDI PANEL ================= */
+        #sdi-panel { background-color: var(--sdi-bg); border: 2px solid #333; height: 420px; position: relative; border-radius: 5px; color: black; box-shadow: inset 0 0 20px rgba(0,0,0,0.1); }
+        .feu-indicator { position: absolute; top: 70px; left: 40px; border: 2px solid #555; padding: 10px 25px; font-weight: bold; font-size: 20px; background: #ccc; color: var(--led-off); }
+        .sdi-leds-left { position: absolute; bottom: 30px; left: 30px; display: flex; flex-direction: column; gap: 15px; }
+        .led-row { display: flex; align-items: center; font-size: 14px; font-weight: bold; }
+        .led-box { width: 16px; height: 16px; border: 1px solid #333; background: var(--led-off); margin-right: 15px; }
+        .led-box.yellow { background: var(--led-yellow); box-shadow: 0 0 10px var(--led-yellow); }
+        .led-box.green { background: var(--led-green); box-shadow: 0 0 10px var(--led-green); }
+        .btn-sdi-label { background: var(--btn-blue); color: white; border: 1px solid #333; padding: 6px 15px; font-size: 13px; font-weight: bold; width: 110px; text-align: center;}
+        
+        #sdi-lcd-container { position: absolute; top: 40px; left: 230px; width: 420px; }
+        #sdi-lcd { background-color: var(--lcd-green); border: 4px solid #222; height: 160px; font-family: 'Courier New', monospace; display: flex; flex-direction: column; position: relative; overflow: hidden;}
+        .lcd-header { display: flex; justify-content: space-between; background: #000; color: #fff; padding: 2px 10px; font-size: 12px; font-weight: bold;}
+        .lcd-body { flex: 1; padding: 10px; font-size: 14px; font-weight: bold; display: flex; flex-direction: column; justify-content: center; color: black;}
+        .lcd-softlabels { display: flex; justify-content: space-between; position: absolute; bottom: 0; width: 100%; background: #000;}
+        .softlabel { flex: 1; text-align: center; color: white; font-size: 11px; padding: 4px 2px; border-right: 1px solid #333; line-height: 1.1;}
+        .softlabel:last-child { border-right: none; }
+        .softkeys-container { display: flex; justify-content: space-between; width: 380px; margin: 10px auto 0 auto; padding: 0 10px;}
+        .softkey-btn { width: 25px; height: 25px; border-radius: 50%; background: var(--btn-blue); border: 1px solid #222; cursor: pointer; box-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
+        .softkey-btn:active { transform: scale(0.9); }
+        .os-menu-title { font-size: 14px; margin-bottom: 5px; text-decoration: underline; color: black; }
+        .os-list { list-style: none; padding: 0; margin: 0; font-size: 13px; line-height: 1.5; color: black; }
+        .os-list li { padding: 2px 5px; }
+        .os-list li.selected { background: #000; color: var(--lcd-green) !important; }
 
-    table{
-      width:100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-      font-size: 12px;
-    }
-    th, td{ border-bottom: 1px solid #eee; padding: 6px 6px; text-align:left; }
-    th{ font-weight:600; }
-    td.actions{ width: 90px; }
-    td.actions button{ padding:4px 6px; border-radius:8px; }
+        /* Croix Directionnelle avec Chevrons */
+        #sdi-nav-cross { position: absolute; top: 50px; left: 680px; width: 80px; height: 80px; border-radius: 50%; background: var(--btn-blue); border: 2px solid #222; display: flex; justify-content: center; align-items: center; }
+        .nav-btn { position: absolute; width: 30px; height: 30px; cursor: pointer; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 20px; transition: 0.1s; }
+        .nav-btn:active { transform: scale(0.8); }
+        .nav-up { top: 0px; } .nav-up::after { content: "▲"; }
+        .nav-down { bottom: 0px; } .nav-down::after { content: "▼"; }
+        .nav-left { left: 0px; } .nav-left::after { content: "◀"; }
+        .nav-right { right: 0px; } .nav-right::after { content: "▶"; }
 
-    .svgWrap{
-      border:1px solid #eee;
-      border-radius:14px;
-      padding:10px;
-      background:#fff;
-      overflow:auto;
-      box-shadow: 0 1px 6px rgba(0,0,0,.04);
-    }
+        .menu-icon-btn { position: absolute; top: 20px; right: 100px; width: 30px; height: 30px; border-radius: 50%; background: var(--btn-blue); border: 1px solid #222; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 16px; cursor: pointer; }
+        #sdi-numpad { position: absolute; top: 60px; right: 50px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .num-key { width: 32px; height: 32px; border-radius: 50%; background: var(--btn-blue); color: white; font-weight: bold; border: 1px solid #222; cursor: pointer; font-size: 14px;}
+        .num-key:active { transform: scale(0.9); }
+        .sdi-actions-bottom { position: absolute; bottom: 30px; right: 280px; display: flex; flex-direction: column; gap: 15px; }
+        .action-row { display: flex; align-items: center; justify-content: flex-end; }
+        .led-circle { width: 16px; height: 16px; border-radius: 50%; border: 1px solid #333; background: var(--led-off); margin-right: 15px;}
+        .led-circle.yellow { background: var(--led-yellow); box-shadow: 0 0 10px var(--led-yellow); }
+        
+        .signature { position: absolute; bottom: 5px; left: 10px; font-size: 8px; color: #555; font-family: Arial, sans-serif; font-weight: normal; }
 
-    /* PRINT A3 */
-    @media print{
-      header, .panel { display:none !important; }
-      main{ padding:0 !important; }
-      .layout{ grid-template-columns: 1fr !important; gap:0 !important; }
-      .svgWrap{
-        border:none !important;
-        border-radius:0 !important;
-        box-shadow:none !important;
-        padding:0 !important;
-        overflow:visible !important;
-      }
-    }
-    @page { size: A3 landscape; margin: 10mm; }
-  </style>
+        /* ================= CMSI PANEL COMPLET ================= */
+        #cmsi-panel { background-color: var(--cmsi-bg); border: 2px solid #333; height: 450px; display: flex; padding: 10px; gap: 10px; border-radius: 5px; }
+        .cmsi-col-left { flex: 1.2; background: var(--cmsi-panel); border: 2px solid #222; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+        .cmsi-block { display: flex; align-items: center; background: transparent; }
+        .cmsi-label { background: var(--btn-blue); color: white; padding: 6px; font-size: 12px; flex: 1; border: 1px solid #111; font-weight: bold; }
+        .cmsi-led { width: 12px; height: 12px; border-radius: 50%; border: 1px solid #111; background: var(--led-off); margin-right: 10px; }
+        .cmsi-btn-oval { width: 45px; height: 25px; border-radius: 12px; background: var(--btn-blue); border: 1px solid #111; cursor: pointer; display: flex; justify-content: center; align-items: center; color: white; margin-left: 10px; }
+        .cmsi-btn-oval.red { background: var(--led-red); }
+        .niveau2-box { border: 1px solid #333; padding: 5px; display: flex; flex-direction: column; }
+        .niv2-keys { display: flex; justify-content: center; gap: 10px; margin-top: 5px; }
+        .niv2-key { width: 30px; height: 30px; border-radius: 50%; background: var(--btn-blue); color: white; font-weight: bold; border: 1px solid #111; cursor: pointer;}
+        .cmsi-col-mid { flex: 1.5; background: var(--cmsi-panel); border: 2px solid #222; padding: 10px; display: flex; flex-direction: column; gap: 5px; }
+        .cmsi-lcd-fake { height: 120px; background: #ddd; border: 2px solid #222; margin-bottom: 10px; }
+        .uga-row { display: flex; align-items: center; }
+        .uga-leds { display: flex; flex-direction: column; gap: 3px; margin-right: 5px; }
+        .uga-led { width: 10px; height: 10px; border-radius: 50%; border: 1px solid #111; background: var(--led-off); }
+        .uga-label { flex: 1; background: #5ab946; border: 1px solid #222; text-align: center; font-size: 12px; padding: 8px 0; font-weight: bold; color: white; }
+        .cmsi-col-right { flex: 1.2; background: var(--cmsi-panel); border: 2px solid #222; padding: 10px; display: flex; align-items: center; justify-content: center; }
+        .cmsi-defilement { width: 100%; height: 100%; background: #eee; border: 1px solid #333; display: flex; align-items: center; justify-content: center; color: #555; }
+        
+        /* MODAL TERRAIN */
+        #modal-terrain { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; color: black; padding: 30px; border-radius: 8px; text-align: center; max-width: 500px; border: 5px solid #e74c3c; }
+        .modal-img-container { position: relative; display: inline-block; margin: 15px 0; }
+        .modal-img-container img { max-width: 250px; border-radius: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .blinking-led { display: none; position: absolute; width: 15px; height: 15px; background: red; border-radius: 50%; box-shadow: 0 0 15px red; animation: blink 0.5s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
+        .btn-action { padding: 10px 20px; background: #e74c3c; color: white; border: none; cursor: pointer; font-size: 16px; border-radius: 5px; font-weight: bold; }
+    </style>
 </head>
-
 <body>
-<header>
-  <div class="group">
-    <label>
-      Plage début
-      <input id="rangeStart" type="time" value="04:00" step="60">
-    </label>
-    <label>
-      Plage fin
-      <input id="rangeEnd" type="time" value="12:00" step="60">
-    </label>
-    <div class="group" style="gap:8px;">
-      <button class="preset" id="p1">Preset 04→12</button>
-      <button class="preset" id="p2">Preset 20→04</button>
-      <button class="preset" id="p3">Preset 22→20</button>
+
+    <button id="btn-retour" onclick="location.reload()">⬅ Retour au Menu</button>
+
+    <div id="menu">
+        <h2>Simulateur SSI - SNCF Bayonne</h2>
+        <button class="btn-menu btn-normal" onclick="startScenario('normal')">Fonctionnement Normal</button>
+        <button class="btn-menu btn-derangement" onclick="startScenario('derangement')">Dérangement (Aléatoire)</button>
+        <button class="btn-menu btn-feu" onclick="startScenario('feu_dm')">Feu : Déclencheur Manuel</button>
+        <button class="btn-menu btn-feu" onclick="startScenario('feu_di')">Feu : Détecteur Automatique</button>
     </div>
-  </div>
 
-  <div class="group">
-    <label>
-      Échelle (px / 30 min)
-      <select id="scale">
-        <option value="70">70</option>
-        <option value="90" selected>90</option>
-        <option value="110">110</option>
-        <option value="130">130</option>
-      </select>
-    </label>
-    <button class="primary" onclick="window.print()">Imprimer A3</button>
-  </div>
+    <div id="evac-banner">
+        ALARME GÉNÉRALE - ÉVACUATION EN COURS (<span id="evac-timer">05:00</span>)
+        <button id="skip-time" onclick="skipTimer()">Passer les 5 min</button>
+    </div>
 
-  <div class="hint">
-    Astuce : si départ &lt; arrivée, le train est considéré comme passant minuit.
-  </div>
-</header>
+    <div id="ssi-container">
+        <div id="sdi-panel">
+            <div class="feu-indicator" id="sdi-feu-text">FEU</div>
+            
+            <div class="sdi-leds-left">
+                <div class="led-row"><div class="led-box" id="led-sdi-derang-main"></div><div class="btn-sdi-label">DÉRANGEMENT</div></div>
+                <div class="led-row"><div class="led-box" id="led-sdi-hs"></div><div class="btn-sdi-label">Hors service</div></div>
+                <div class="led-row"><div class="led-box"></div><div class="btn-sdi-label">Essai</div></div>
+                <div class="led-row">
+                    <div style="display:flex; flex-direction:column; gap:2px;"><div class="led-box green" id="led-sdi-tension"></div><div class="led-box"></div></div>
+                    <div class="btn-sdi-label" style="font-size:10px; line-height: 1.1;">Sous-tension<br>Système H.S.</div>
+                </div>
+            </div>
 
-<main>
-  <div class="layout">
-    <section class="panel">
-      <h2>Ajouter un train</h2>
-      <div class="row">
-        <label>
-          N° Train
-          <input id="trainNo" placeholder="ex: 866123" />
-        </label>
-        <label class="small">
-          Voie
-          <select id="track">
-            <optgroup label="Voies principales">
-              <option>A</option><option>B</option><option>C</option><option>D</option><option>E</option>
-            </optgroup>
-            <optgroup label="Voies de service">
-              <option>T6</option><option>9</option><option>11</option><option>13</option>
-            </optgroup>
-          </select>
-        </label>
-      </div>
+            <div id="sdi-lcd-container">
+                <div id="sdi-lcd">
+                    <div class="lcd-header">
+                        <span id="lcd-status">SIEMENS</span><span id="lcd-time">12:00</span>
+                    </div>
+                    <div class="lcd-body" id="lcd-main-content"></div>
+                    <div class="lcd-softlabels">
+                        <div class="softlabel" id="lbl-soft-1">Exécuter<br>commandes</div>
+                        <div class="softlabel" id="lbl-soft-2">Passer en<br>affichage étendu</div>
+                        <div class="softlabel" id="lbl-soft-3">Plus<br>Options</div>
+                    </div>
+                </div>
+                <div class="softkeys-container">
+                    <div class="softkey-btn" onclick="pressSoftkey(1)"></div>
+                    <div class="softkey-btn" onclick="pressSoftkey(2)"></div>
+                    <div class="softkey-btn" onclick="pressSoftkey(3)"></div>
+                </div>
+            </div>
 
-      <div class="row" style="margin-top:8px;">
-        <label class="small">
-          Arrivée
-          <input id="arr" type="time" value="09:04" step="60">
-        </label>
-        <label class="small">
-          Départ
-          <input id="dep" type="time" value="09:08" step="60">
-        </label>
-        <label>
-          Couleur (option)
-          <select id="color">
-            <option value="auto" selected>Auto</option>
-            <option value="#1f6feb">Bleu</option>
-            <option value="#d73a49">Rouge</option>
-            <option value="#2da44e">Vert</option>
-            <option value="#8250df">Violet</option>
-            <option value="#b35900">Orange</option>
-            <option value="#111111">Noir</option>
-          </select>
-        </label>
-      </div>
+            <div id="sdi-nav-cross">
+                <div class="nav-btn nav-up" onclick="navMove(-1)"></div>
+                <div class="nav-btn nav-down" onclick="navMove(1)"></div>
+                <div class="nav-btn nav-left" onclick="navLevel(-1)"></div>
+                <div class="nav-btn nav-right" onclick="navLevel(1)"></div>
+            </div>
 
-      <div class="row" style="margin-top:10px;">
-        <button class="primary" id="addBtn">Ajouter</button>
-        <button id="clearBtn">Tout effacer</button>
-        <button id="demoBtn">Démo</button>
-      </div>
+            <div class="menu-icon-btn" onclick="openMenu()">☰</div>
+            <div id="sdi-numpad">
+                <button class="num-key" onclick="pressNumpad('1')">1</button><button class="num-key" onclick="pressNumpad('2')">2</button><button class="num-key" onclick="pressNumpad('3')">3</button>
+                <button class="num-key" onclick="pressNumpad('4')">4</button><button class="num-key" onclick="pressNumpad('5')">5</button><button class="num-key" onclick="pressNumpad('6')">6</button>
+                <button class="num-key" onclick="pressNumpad('7')">7</button><button class="num-key" onclick="pressNumpad('8')">8</button><button class="num-key" onclick="pressNumpad('9')">9</button>
+                <button class="num-key" onclick="pressNumpad('*')">*</button><button class="num-key" onclick="pressNumpad('0')">0</button><button class="num-key" onclick="pressNumpad('#')">#</button>
+                <button class="num-key" onclick="pressNumpad('C')" style="grid-column: 1 / span 2; width: auto; border-radius: 15px;">C</button><button class="num-key" onclick="pressNumpad('OK')">ok</button>
+            </div>
 
-      <h2 style="margin-top:16px;">Liste</h2>
-      <table>
-        <thead>
-          <tr><th>Train</th><th>Voie</th><th>Arr</th><th>Dep</th><th></th></tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </section>
+            <div class="sdi-actions-bottom">
+                <div class="action-row"><div class="led-circle" id="led-sdi-arret"></div><button class="btn-sdi-label" onclick="actionSdi('arret')">Arrêt signal sonore</button></div>
+                <div class="action-row"><div class="led-circle" id="led-sdi-rearmement"></div><button class="btn-sdi-label" onclick="actionSdi('rearmement')">Réarmement</button></div>
+            </div>
+            
+            <div class="signature">Ludo Klein V1</div>
+        </div>
 
-    <section class="svgWrap">
-      <div id="svgHost"></div>
-    </section>
-  </div>
-</main>
+        <div id="cmsi-panel">
+            <div class="cmsi-col-left">
+                <div class="cmsi-block"><div class="cmsi-led" style="background:var(--led-green);"></div><div class="cmsi-label">Sous tension</div></div>
+                
+                <div class="niveau2-box">
+                    <div class="cmsi-block"><div class="cmsi-led" id="led-cmsi-niv2"></div><div class="cmsi-label" style="text-align:center;">Niveau 2</div></div>
+                    <div class="niv2-keys">
+                        <button class="niv2-key" onclick="pressCmsi('A')">A</button><button class="niv2-key" onclick="pressCmsi('B')">B</button>
+                        <button class="niv2-key" onclick="pressCmsi('C')">C</button><button class="niv2-key" onclick="pressCmsi('D')">D</button>
+                    </div>
+                </div>
 
-<script>
-(() => {
-  const TRACKS = ["A","B","C","D","E","T6","9","11","13"];
+                <div class="cmsi-block" style="margin-top:10px;">
+                    <div style="display:flex; flex-direction:column; margin-right:10px;"><div class="cmsi-led"></div><div class="cmsi-led" style="margin-top:5px;"></div></div>
+                    <div style="display:flex; flex-direction:column; flex:1;"><div class="cmsi-label" style="font-size:10px;">Défaut secteur</div><div class="cmsi-label" style="font-size:10px; margin-top:2px;">Défaut batterie</div></div>
+                    <div class="cmsi-label" style="margin-left:5px; text-align:center;">Arrêt signal<br>sonore</div><div class="cmsi-btn-oval" onclick="actionCmsi('arret')">🔇</div>
+                </div>
 
-  const els = {
-    rangeStart: document.getElementById("rangeStart"),
-    rangeEnd: document.getElementById("rangeEnd"),
-    scale: document.getElementById("scale"),
-    trainNo: document.getElementById("trainNo"),
-    track: document.getElementById("track"),
-    arr: document.getElementById("arr"),
-    dep: document.getElementById("dep"),
-    color: document.getElementById("color"),
-    tbody: document.getElementById("tbody"),
-    svgHost: document.getElementById("svgHost"),
-    addBtn: document.getElementById("addBtn"),
-    clearBtn: document.getElementById("clearBtn"),
-    demoBtn: document.getElementById("demoBtn"),
-    p1: document.getElementById("p1"),
-    p2: document.getElementById("p2"),
-    p3: document.getElementById("p3")
-  };
+                <div class="cmsi-block"><div class="cmsi-led"></div><div class="cmsi-label" style="text-align:center; font-size:10px;">Défaut système</div><div class="cmsi-label" style="margin-left:5px; text-align:center; font-size:10px;">Test signalisation</div><div class="cmsi-btn-oval"></div></div>
+                <div class="cmsi-block" style="justify-content:flex-end;"><div class="cmsi-label" style="text-align:center;">Réarmement</div><div class="cmsi-btn-oval" onclick="actionCmsi('rearmement')">↩</div></div>
+                <div class="cmsi-block"><div class="cmsi-led"></div><div class="cmsi-label" style="text-align:center; font-size:10px;">Défaut liaison SDI/CMSI</div><div class="cmsi-label" style="margin-left:5px; text-align:center; font-size:10px; flex:0.3;">Bilan</div><div class="cmsi-btn-oval"></div></div>
+                
+                <div class="cmsi-block" style="margin-top:20px;">
+                    <div style="display:flex; flex-direction:column; margin-right:10px;"><div class="cmsi-led" id="led-evac-1"></div><div class="cmsi-led" style="margin-top:5px;"></div></div>
+                    <div style="display:flex; flex-direction:column; flex:1;"><div class="cmsi-label" style="font-size:10px;">Evacuation générale</div><div class="cmsi-label" style="font-size:10px; margin-top:2px;">Alarme</div></div>
+                    <div class="cmsi-label" style="margin-left:5px; text-align:center; font-size:10px;">Commande<br>évacuation</div><div class="cmsi-btn-oval red"></div>
+                </div>
+            </div>
 
-  // Storage
-  const KEY = "graphique_voies_v1";
-  let trains = load() ?? [];
+            <div class="cmsi-col-mid">
+                <div class="cmsi-lcd-fake"></div>
+                <div class="uga-row"><div class="uga-leds"><div class="uga-led"></div><div class="uga-led"></div><div class="uga-led"></div></div><div class="uga-label">Désenfumage HALL GARE</div><div class="cmsi-btn-oval red"></div></div>
+                <div class="uga-row"><div class="uga-leds"><div class="uga-led"></div><div class="uga-led"></div><div class="uga-led"></div></div><div class="uga-label">Désenfumage RELAY</div><div class="cmsi-btn-oval red"></div></div>
+                <div class="uga-row"><div class="uga-leds"><div class="uga-led"></div><div class="uga-led"></div><div class="uga-led"></div></div><div class="uga-label" style="background:white;"></div></div>
+                <div class="uga-row"><div class="uga-leds"><div class="uga-led"></div><div class="uga-led"></div><div class="uga-led"></div></div><div class="uga-label" style="background:white;"></div></div>
+            </div>
 
-  function load(){
-    try { return JSON.parse(localStorage.getItem(KEY)); } catch { return null; }
-  }
-  function save(){
-    localStorage.setItem(KEY, JSON.stringify(trains));
-  }
+            <div class="cmsi-col-right"><div class="cmsi-defilement">Défilement alarmes</div></div>
+        </div>
+    </div>
 
-  function hhmmToMinutes(hhmm){
-    // "09:04" -> 544
-    const [h,m] = hhmm.split(":").map(Number);
-    return h*60 + m;
-  }
-  function minutesToHHMM(total){
-    total = ((total % 1440) + 1440) % 1440;
-    const h = String(Math.floor(total/60)).padStart(2,"0");
-    const m = String(total%60).padStart(2,"0");
-    return `${h}:${m}`;
-  }
+    <div id="modal-terrain">
+        <div class="modal-content">
+            <h2 id="modal-title">Levée de Doute</h2>
+            <p id="modal-desc" style="font-weight:bold;"></p>
+            <div class="modal-img-container">
+                <img src="" alt="Equipement" id="modal-img">
+                <div id="modal-led" class="blinking-led"></div>
+            </div>
+            <br><button class="btn-action" onclick="resoudreTerrain()">Valider l'intervention terrain</button>
+        </div>
+    </div>
 
-  function computeRange(){
-    const start = hhmmToMinutes(els.rangeStart.value);
-    const end0 = hhmmToMinutes(els.rangeEnd.value);
-    // if end <= start => crosses midnight (e.g. 20:00 -> 04:00)
-    const end = (end0 <= start) ? end0 + 1440 : end0;
-    return { start, end, durationMin: end - start };
-  }
+    <script>
+        // --- DONNEES BAYONNE ---
+        const toutesZones = ["ZDA 1 CAVE TOUR SUD", "ZDA 2 RDC ESCALE", "ZDA 5 RDC SALLE APPAREILLAGE", "ZDA 10 COMBLES HORLOGE", "ZDM 102 DECL. MANUELS RDC"];
+        let zonesHS = []; 
 
-  function autoColor(i){
-    // stable palette
-    const palette = ["#1f6feb","#d73a49","#2da44e","#8250df","#b35900","#0f766e","#b91c1c","#334155"];
-    return palette[i % palette.length];
-  }
+        // --- GESTION AUDIO API ---
+        let audioCtx;
+        let sdiBuzzerOsc, sdiBuzzerInterval;
+        let evacSirenOsc, evacSirenInterval;
 
-  function normalizeTrain(t){
-    const arr = hhmmToMinutes(t.arr);
-    let dep = hhmmToMinutes(t.dep);
-    // If departure earlier than arrival => assume it crosses midnight
-    if(dep < arr) dep += 1440;
-    return { ...t, arrMin: arr, depMin: dep };
-  }
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
 
-  function inRange(tNorm, range){
-    // Map train times into same timeline window:
-    // Consider that train may happen after midnight relative to start.
-    // We choose the occurrence that best overlaps with range.
-    const { start, end } = range;
+        function playSdiBuzzer(type) {
+            initAudio(); stopSdiBuzzer(); 
+            sdiBuzzerOsc = audioCtx.createOscillator();
+            let gainNode = audioCtx.createGain();
+            sdiBuzzerOsc.type = 'square';
+            sdiBuzzerOsc.connect(gainNode); gainNode.connect(audioCtx.destination);
+            
+            if (type === 'continu') { 
+                sdiBuzzerOsc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                gainNode.gain.value = 0.05;
+            } else if (type === 'discontinu') { 
+                sdiBuzzerOsc.frequency.setValueAtTime(1000, audioCtx.currentTime);
+                let isPlaying = false;
+                sdiBuzzerInterval = setInterval(() => {
+                    isPlaying = !isPlaying; gainNode.gain.value = isPlaying ? 0.05 : 0;
+                }, 400); 
+            }
+            sdiBuzzerOsc.start();
+        }
 
-    // Generate possible shifted intervals (0 or +1440) to align with range
-    const candidates = [];
-    for(const shift of [0, 1440]){
-      const a = tNorm.arrMin + shift;
-      const d = tNorm.depMin + shift;
-      candidates.push({a,d});
-    }
-    // pick the candidate that intersects range the most (or at least is closest)
-    let best = null;
-    let bestScore = -Infinity;
-    for(const c of candidates){
-      const inter = Math.max(0, Math.min(end,c.d) - Math.max(start,c.a));
-      const dist = Math.min(Math.abs(c.a - start), Math.abs(c.d - end));
-      const score = inter*10 - dist; // prefer intersection
-      if(score > bestScore){ bestScore = score; best = c; }
-    }
-    return best;
-  }
+        function stopSdiBuzzer() {
+            if(sdiBuzzerInterval) clearInterval(sdiBuzzerInterval);
+            if(sdiBuzzerOsc) { try { sdiBuzzerOsc.stop(); } catch(e){} sdiBuzzerOsc.disconnect(); sdiBuzzerOsc = null; }
+        }
 
-  function render(){
-    renderTable();
-    renderSVG();
-  }
+        function playEvacSiren() {
+            initAudio(); if(evacSirenOsc) stopEvacSiren();
+            evacSirenOsc = audioCtx.createOscillator();
+            let gainNode = audioCtx.createGain();
+            evacSirenOsc.type = 'square'; 
+            evacSirenOsc.connect(gainNode); gainNode.connect(audioCtx.destination); gainNode.gain.value = 0.05; 
+            evacSirenOsc.start();
+            
+            let isHighPitch = true;
+            evacSirenInterval = setInterval(() => {
+                evacSirenOsc.frequency.setValueAtTime(isHighPitch ? 544 : 440, audioCtx.currentTime);
+                isHighPitch = !isHighPitch;
+            }, 500); 
+        }
 
-  function renderTable(){
-    els.tbody.innerHTML = "";
-    trains.forEach((t, idx) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${escapeHtml(t.no || "")}</td>
-        <td>${escapeHtml(t.track)}</td>
-        <td>${escapeHtml(t.arr)}</td>
-        <td>${escapeHtml(t.dep)}</td>
-        <td class="actions">
-          <button data-edit="${idx}">Édit</button>
-          <button data-del="${idx}">Suppr</button>
-        </td>`;
-      els.tbody.appendChild(tr);
-    });
+        function stopEvacSiren() {
+            if(evacSirenInterval) clearInterval(evacSirenInterval);
+            if(evacSirenOsc) { try { evacSirenOsc.stop(); } catch(e){} evacSirenOsc.disconnect(); evacSirenOsc = null; }
+        }
 
-    els.tbody.querySelectorAll("button[data-del]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const i = Number(btn.getAttribute("data-del"));
-        trains.splice(i,1);
-        save(); render();
-      });
-    });
+        // --- ETATS DU SYSTEME OS SIEMENS ---
+        let lcdMode = 'NORMAL'; 
+        let currentMenuNode = null;
+        let menuCursor = 0;
+        let alarmLine1 = "Système Normal";
+        let alarmLine2 = "";
+        let alarmStatus = "SIEMENS";
+        
+        let activeDerangements = []; // Mémoire des défauts
+        let historique = []; // Journal des événements
 
-    els.tbody.querySelectorAll("button[data-edit]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const i = Number(btn.getAttribute("data-edit"));
-        const t = trains[i];
-        els.trainNo.value = t.no || "";
-        els.track.value = t.track;
-        els.arr.value = t.arr;
-        els.dep.value = t.dep;
-        els.color.value = t.color || "auto";
-        // Replace on next add
-        trains.splice(i,1);
-        save(); render();
-      });
-    });
-  }
+        const osMenus = {
+            'main': { title: "Menu principal", items: [{label: "1. Résumé des messages", target: 'resume'}, {label: "2. Fonctions", target: 'fonctions'}, {label: "4. Topologie", target: 'topologie'}, {label: "6. Historique", target: 'historique'}] },
+            'resume': { title: "Résumé des messages", items: [{label: "2. Dérangement", target: 'liste_derangements'}, {label: "4. Hors service", target: 'liste_zones_hs_actuelles'}] },
+            'fonctions': { title: "Fonctions", items: [{label: "1. En/Hors", target: 'en_hors'}, {label: "2. Test", target: 'vide'}] },
+            'en_hors': { title: "Choisir catégorie", items: [{label: "1. Zone", target: 'liste_zones_pour_hs'}] },
+            'topologie': { title: "Topologie", items: [{label: "1. Arbre détection", target: 'arbre_det'}] },
+            'arbre_det': { title: "Arbre détection", items: [{label: "1. Site 1", target: 'arbre_bat', isNode: true}] },
+            'arbre_bat': { title: "Bâtiment", items: [{label: "1. Rez-de-chaussée", target: 'arbre_sec', isNode: true}, {label: "2. 1er étage", target: 'arbre_sec', isNode: true}] },
+            'arbre_sec': { title: "Section", items: [{label: "1. Zone 1", target: 'arbre_zone', isNode: true}, {label: "2. Zone 2", target: 'arbre_zone', isNode: true}] },
+            'arbre_zone': { title: "Détecteurs", items: [{label: "1. Détecteur 1", target: 'exec_hors', rawData: "Détecteur 1"}, {label: "2. Détecteur 2", target: 'exec_hors', rawData: "Détecteur 2"}] },
+            'liste_zones_pour_hs': { title: "Sélection Zone (Mise HS)", items: [] },
+            'exec_hors': { title: "Choisir commande", items: [] }, // Peuplé dynamiquement
+            'liste_zones_hs_actuelles': { title: "Zones Hors Service", items: [] },
+            'exec_en': { title: "Choisir commande", items: [] }, // Peuplé dynamiquement
+            'liste_derangements': { title: "Dérangements", items: [] },
+            'historique': { title: "Historique", items: [] },
+            'vide': { title: "Fonction non simulée", items: [] }
+        };
 
-  function renderSVG(){
-    const range = computeRange();
-    const pxPer30 = Number(els.scale.value);
-    const pxPerMin = pxPer30 / 30;
+        let currentScenario = '';
+        let step = 0;
+        let sdiInput = "";
+        let cmsiInput = "";
+        let isNiveau2 = false;
+        let evacTimeLeft = 300;
+        let evacTimerInterval;
 
-    const leftPad = Number(getCSS("--leftPad"));
-    const topPad = Number(getCSS("--topPad"));
-    const rowH = Number(getCSS("--rowH"));
-    const barH = Number(getCSS("--barH"));
-    const barYInset = Number(getCSS("--barYInset"));
+        // --- AFFICHAGE LCD ---
+        function renderLCD() {
+            const body = document.getElementById('lcd-main-content');
+            const l1 = document.getElementById('lbl-soft-1');
+            const l2 = document.getElementById('lbl-soft-2');
+            const l3 = document.getElementById('lbl-soft-3');
+            
+            let now = new Date();
+            document.getElementById('lcd-time').innerText = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
 
-    const width = leftPad + Math.ceil(range.durationMin * pxPerMin) + 40;
-    const height = topPad + TRACKS.length * rowH + 30;
+            if (lcdMode === 'NORMAL') {
+                document.getElementById('lcd-status').innerText = alarmStatus;
+                body.innerHTML = `<div style="text-align:center; font-size:20px; color:black;">${alarmLine1}</div><div style="text-align:center; font-weight:normal; font-size:14px; margin-top:10px; color:black;">${alarmLine2}</div>`;
+                l1.innerHTML = "Exécuter<br>commandes"; l2.innerHTML = "Passer en<br>affichage étendu"; l3.innerHTML = "Plus<br>Options";
+            } 
+            else if (lcdMode === 'MENU') {
+                document.getElementById('lcd-status').innerText = "Niveau d'accès 2.1";
+                let html = `<div class="os-menu-title" style="color:black;">${osMenus[currentMenuNode].title}</div><ul class="os-list" style="color:black;">`;
+                let start = Math.max(0, menuCursor - 2); 
+                let end = Math.min(osMenus[currentMenuNode].items.length, start + 4);
+                
+                if(osMenus[currentMenuNode].items.length === 0) { 
+                    html += `<li>(Aucun élément)</li>`; 
+                } else {
+                    for(let i = start; i < end; i++) {
+                        html += `<li class="${i === menuCursor ? 'selected' : ''}">${osMenus[currentMenuNode].items[i].label}</li>`;
+                    }
+                }
+                html += `</ul>`; body.innerHTML = html;
+                
+                if (currentMenuNode === 'consigne') { l1.innerHTML = ""; l2.innerHTML = ""; l3.innerHTML = "Aller En<br>arrière"; }
+                else if (currentMenuNode.startsWith('arbre_')) { l1.innerHTML = "Exécuter<br>Commandes"; l2.innerHTML = "Niveau<br>Inférieur"; l3.innerHTML = "Plus<br>Options"; }
+                else if (currentMenuNode === 'liste_zones_pour_hs' || currentMenuNode === 'liste_zones_hs_actuelles' || currentMenuNode === 'liste_derangements') { l1.innerHTML = "Exécuter<br>Commandes"; l2.innerHTML = "Affichage<br>étendu"; l3.innerHTML = "Quitter <C>"; }
+                else if (currentMenuNode === 'exec_hors' || currentMenuNode === 'exec_en' || currentMenuNode === 'plus_options_alarme' || currentMenuNode === 'plus_options_item') { l1.innerHTML = "Sélectionner"; l2.innerHTML = ""; l3.innerHTML = "Retour <C>"; }
+                else { l1.innerHTML = "Sélectionner"; l2.innerHTML = ""; l3.innerHTML = "Quitter <C>"; }
+            }
+            
+            document.getElementById('led-sdi-hs').classList.toggle('yellow', zonesHS.length > 0);
+            let hasDerangement = activeDerangements.length > 0 || (lcdMode === 'NORMAL' && alarmStatus.includes("DÉRANGEMENT"));
+            document.getElementById('led-sdi-derang-main').classList.toggle('yellow', hasDerangement);
+        }
 
-    const svg = svgEl("svg", {
-      xmlns: "http://www.w3.org/2000/svg",
-      width: width,
-      height: height,
-      viewBox: `0 0 ${width} ${height}`,
-      style: "display:block;"
-    });
+        function openMenu() { initAudio(); lcdMode = 'MENU'; currentMenuNode = 'main'; menuCursor = 0; renderLCD(); }
 
-    // Title
-    const title = `Graphique d’occupation des voies — ${els.rangeStart.value} → ${els.rangeEnd.value}`;
-    svg.appendChild(svgText(14, 18, title, { "font-size":"14", "font-weight":"700", fill:"#111" }));
-    svg.appendChild(svgText(14, 34, "Traits : 30 min (heures renforcées) — Chevauchement visuel autorisé", { "font-size":"11", fill:"#444" }));
+        function pressNumpad(key) {
+            initAudio(); 
+            if (key === 'C') { 
+                if (step === 4 || step === 2) { sdiInput = ""; alarmLine2 = "Code: "; renderLCD(); return; }
+                lcdMode = 'NORMAL'; renderLCD(); return; 
+            }
+            if (lcdMode === 'MENU' && key >= '1' && key <= '9') {
+                let items = osMenus[currentMenuNode].items;
+                for(let i=0; i<items.length; i++){
+                    if(items[i].label.startsWith(key + ".")) { menuCursor = i; executeMenuSelection(); break; }
+                }
+            } else if (lcdMode === 'NORMAL' && (step === 4 || step === 2)) {
+                if(key === 'OK') {
+                    if (sdiInput === "2222") {
+                        if (currentScenario === 'derangement' && step === 2) {
+                            alert("Défaut acquitté visuellement. Simulation : Le technicien répare le défaut...");
+                            activeDerangements = []; historique.push("Technicien : Défaut réparé");
+                            location.reload();
+                        } else {
+                            alarmStatus = "SIEMENS"; alarmLine1 = "Système Normal"; alarmLine2 = "";
+                            document.getElementById('sdi-feu-text').style.color = "var(--led-off)";
+                            document.getElementById('led-sdi-derang-main').classList.remove('yellow');
+                            document.getElementById('led-sdi-rearmement').classList.remove('yellow');
+                            document.getElementById('led-sdi-arret').classList.remove('yellow');
+                            step = 5; sdiInput = ""; renderLCD();
+                        }
+                    } else {
+                        sdiInput = ""; alarmLine2 = "Code incorrect !"; renderLCD();
+                        setTimeout(() => { alarmLine2 = "Code: "; renderLCD(); }, 1500);
+                    }
+                } else {
+                    if (sdiInput.length < 4) { sdiInput += key; alarmLine2 = "Code: " + "*".repeat(sdiInput.length); renderLCD(); }
+                }
+            }
+        }
 
-    // Background
-    svg.appendChild(svgEl("rect", { x:0, y:0, width, height, fill:"#fff" }));
+        function navMove(dir) {
+            initAudio();
+            if (lcdMode === 'MENU' && osMenus[currentMenuNode].items.length > 0) {
+                menuCursor += dir;
+                if (menuCursor < 0) menuCursor = 0;
+                if (menuCursor >= osMenus[currentMenuNode].items.length) menuCursor = osMenus[currentMenuNode].items.length - 1;
+                renderLCD();
+            }
+        }
 
-    // Grid area
-    const gridX0 = leftPad;
-    const gridY0 = topPad;
-    const gridW = range.durationMin * pxPerMin;
-    const gridH = TRACKS.length * rowH;
+        function navLevel(dir) {
+            initAudio();
+            if (lcdMode === 'MENU') {
+                let items = osMenus[currentMenuNode].items;
+                if(items.length > 0 && items[menuCursor].isNode && dir > 0) { executeMenuSelection(); } 
+                else if (dir < 0) { lcdMode = 'NORMAL'; renderLCD(); } 
+            }
+        }
 
-    // Border of grid
-    svg.appendChild(svgEl("rect", { x:gridX0, y:gridY0, width:gridW, height:gridH, fill:"#fff", stroke:"#bbb" }));
+        function pressSoftkey(index) {
+            initAudio();
+            if (lcdMode === 'NORMAL') {
+                if (index === 3 && (alarmStatus.includes("FEU") || alarmStatus.includes("DÉRANGEMENT"))) {
+                    osMenus['plus_options_alarme'] = { title: "Choix option", items: [{label: "3. Afficher consigne", action: 'CONSIGNE'}, {label: "4. Exécuter commandes", target: 'vide'}] };
+                    lcdMode = 'MENU'; currentMenuNode = 'plus_options_alarme'; menuCursor = 0; renderLCD();
+                }
+            }
+            else if (lcdMode === 'MENU') {
+                let l1 = document.getElementById('lbl-soft-1').innerText;
+                let l2 = document.getElementById('lbl-soft-2').innerText;
+                let l3 = document.getElementById('lbl-soft-3').innerText;
 
-    // Horizontal rows + labels
-    TRACKS.forEach((track, r) => {
-      const y = gridY0 + r*rowH;
-      // row line
-      svg.appendChild(svgEl("line", { x1:gridX0, y1:y, x2:gridX0+gridW, y2:y, stroke:"#e5e5e5" }));
-      // label
-      svg.appendChild(svgText(14, y + rowH/2 + 4, `Voie ${track}`, { "font-size":"12", "font-weight":"700", fill:"#111" }));
-    });
-    // bottom row line
-    svg.appendChild(svgEl("line", { x1:gridX0, y1:gridY0+gridH, x2:gridX0+gridW, y2:gridY0+gridH, stroke:"#e5e5e5" }));
+                if (index === 1 && (l1.includes("Sélectionner") || l1.includes("Exécuter"))) executeMenuSelection();
+                if (index === 2 && l2.includes("Niveau")) navLevel(1);
+                if (index === 3 && (l3.includes("Quitter") || l3.includes("Retour") || l3.includes("Aller En"))) { lcdMode = 'NORMAL'; renderLCD(); }
+                if (index === 3 && l3.includes("Plus")) {
+                    osMenus['plus_options_item'] = { title: "Choix option", items: [{label: "3. Exécuter commandes", action: 'FORCE_EXEC'}] };
+                    currentMenuNode = 'plus_options_item'; menuCursor = 0; renderLCD();
+                }
+            }
+        }
 
-    // Vertical grid (every 30 min)
-    const startMin = range.start;
-    for(let m = 0; m <= range.durationMin; m += 30){
-      const x = gridX0 + m * pxPerMin;
-      const absolute = startMin + m; // can be >1440
-      const hhmm = minutesToHHMM(absolute);
+        function executeMenuSelection() {
+            let items = osMenus[currentMenuNode].items; if(items.length === 0) return;
+            let selectedItem = items[menuCursor];
 
-      const isHour = (absolute % 60 === 0);
-      svg.appendChild(svgEl("line", {
-        x1:x, y1:gridY0, x2:x, y2:gridY0+gridH,
-        stroke: isHour ? "#a9a9a9" : "#d7d7d7",
-        "stroke-width": isHour ? 1.5 : 1
-      }));
+            if (selectedItem.action === 'SET_HORS') {
+                let zoneAIsoler = selectedItem.rawData;
+                if(!zonesHS.includes(zoneAIsoler)) {
+                    zonesHS.push(zoneAIsoler);
+                    historique.unshift(`Mise HORS : ${zoneAIsoler}`);
+                    alert(`Commande exécutée : ${zoneAIsoler} est HORS SERVICE.`); 
+                } else {
+                    alert(`Cette zone est déjà HORS SERVICE.`);
+                }
+                lcdMode = 'NORMAL';
+            } 
+            else if (selectedItem.action === 'SET_EN') {
+                let zoneARemetre = selectedItem.rawData;
+                if(zonesHS.includes(zoneARemetre)) {
+                    zonesHS = zonesHS.filter(z => z !== zoneARemetre);
+                    historique.unshift(`Mise EN : ${zoneARemetre}`);
+                    alert(`Commande exécutée : ${zoneARemetre} est EN SERVICE.`); 
+                } else {
+                    alert(`Cette zone est déjà EN SERVICE.`);
+                }
+                lcdMode = 'NORMAL';
+            }
+            else if (selectedItem.action === 'CONSIGNE') {
+                osMenus['consigne'] = { title: "Consigne de sécurité", items: [{label: "- Appliquer procédure", target: null}, {label: "- Evacuer si nécessaire", target: null}] };
+                currentMenuNode = 'consigne'; menuCursor = 0;
+            }
+            else if (selectedItem.action === 'FORCE_EXEC') {
+                currentMenuNode = 'exec_hors'; menuCursor = 0;
+            }
+            else if (selectedItem.target) {
+                let nextNode = selectedItem.target;
+                
+                // Creation de listes dynamiques pour afficher les bons éléments
+                if (nextNode === 'liste_zones_pour_hs') { 
+                    osMenus[nextNode].items = toutesZones.map((z, i) => ({label: `${i+1}. ${z}`, target: 'exec_hors', rawData: z})); 
+                }
+                if (nextNode === 'liste_zones_hs_actuelles') { 
+                    osMenus[nextNode].items = zonesHS.map((z, i) => ({label: `${i+1}. ${z}`, target: 'exec_en', rawData: z})); 
+                }
+                if (nextNode === 'liste_derangements') {
+                    osMenus[nextNode].items = activeDerangements.map((d, i) => ({label: `${i+1}. ${d}`, target: 'vide'}));
+                    if(activeDerangements.length === 0) osMenus[nextNode].items = [{label: "Aucun dérangement", target: 'vide'}];
+                }
+                if (nextNode === 'historique') {
+                    osMenus[nextNode].items = historique.map((h, i) => ({label: `${i+1}. ${h}`, target: 'vide'}));
+                    if(historique.length === 0) osMenus[nextNode].items = [{label: "Historique vide", target: 'vide'}];
+                }
+                
+                // Fix: Permet à "1. EN" et "2. HORS" de savoir quelle zone a été sélectionnée
+                if (nextNode === 'exec_hors' || nextNode === 'exec_en') {
+                    let zone = selectedItem.rawData;
+                    osMenus[nextNode].items = [
+                        {label: "1. EN", action: 'SET_EN', rawData: zone}, 
+                        {label: "2. HORS", action: 'SET_HORS', rawData: zone}
+                    ];
+                }
 
-      // time label on top
-      if(isHour){
-        svg.appendChild(svgText(x + 2, gridY0 - 8, hhmm.slice(0,2) + "h", { "font-size":"11", "font-weight":"700", fill:"#111" }));
-      } else {
-        svg.appendChild(svgText(x + 2, gridY0 - 8, hhmm.slice(3,5), { "font-size":"10", fill:"#666" }));
-      }
-    }
+                currentMenuNode = nextNode;
+                menuCursor = 0;
+            }
+            renderLCD();
+        }
 
-    // Draw trains
-    const normalized = trains.map(normalizeTrain);
-    normalized.forEach((t, i) => {
-      const row = TRACKS.indexOf(t.track);
-      if(row < 0) return;
+        // --- GESTION SCENARIOS ---
+        function startScenario(scen) {
+            initAudio(); 
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('ssi-container').style.display = 'flex';
+            document.getElementById('btn-retour').style.display = 'block';
+            currentScenario = scen; step = 1;
+            
+            if (scen === 'feu_dm' || scen === 'feu_di') {
+                alarmStatus = "001 ALARME FEU"; alarmLine1 = "INCENDIE";
+                alarmLine2 = (scen === 'feu_dm') ? "ZDM 102 DECL. MANUELS RDC" : "ZDA 1 CAVE TOUR SUD";
+                
+                if(zonesHS.includes(alarmLine2)) { alert("⚠️ CETTE ZONE EST HORS SERVICE ! Pour l'exercice, on force le feu."); }
+                
+                document.getElementById('sdi-feu-text').style.color = "var(--led-red)";
+                playSdiBuzzer('discontinu'); playEvacSiren();
+                historique.unshift("ALARME FEU : " + alarmLine2);
+                
+                evacTimeLeft = 300; document.getElementById('evac-banner').style.display = 'block';
+                evacTimerInterval = setInterval(() => {
+                    if(evacTimeLeft > 0) {
+                        evacTimeLeft--;
+                        let m = Math.floor(evacTimeLeft / 60); let s = evacTimeLeft % 60;
+                        document.getElementById('evac-timer').innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+                    } else { stopEvacSiren(); clearInterval(evacTimerInterval); }
+                }, 1000);
+            } 
+            else if (scen === 'derangement') {
+                alarmStatus = "001 DÉRANGEMENT"; alarmLine1 = "Défaut Ligne"; alarmLine2 = "ZDA 5 RDC SALLE APPAREILLAGE";
+                document.getElementById('led-sdi-derang-main').classList.add('yellow');
+                activeDerangements.push("ZDA 5 RDC SALLE APPAREILLAGE"); // Mémorisation du défaut
+                historique.unshift("DÉFAUT : " + alarmLine2);
+                playSdiBuzzer('continu');
+            }
+            else if (scen === 'normal') {
+                alarmStatus = "SIEMENS"; alarmLine1 = "Système Normal"; alarmLine2 = "";
+            }
+            renderLCD();
+        }
 
-      const aligned = inRange(t, range);
-      if(!aligned) return;
+        function skipTimer() { evacTimeLeft = 0; document.getElementById('evac-timer').innerText = "00:00"; stopEvacSiren(); }
 
-      // clip to range
-      const a = Math.max(range.start, aligned.a);
-      const d = Math.min(range.end, aligned.d);
-      if(d <= a) return;
+        function actionSdi(action) {
+            initAudio();
+            if(action === 'arret' && step === 1) {
+                stopSdiBuzzer(); 
+                document.getElementById('led-sdi-arret').classList.add('yellow');
+                
+                if (currentScenario === 'feu_dm') {
+                    setTimeout(() => { 
+                        document.getElementById('modal-img').src = '1000027816.jpg';
+                        document.getElementById('modal-desc').innerText = "Levée de doute : Réarmement du Déclencheur Manuel.";
+                        document.getElementById('modal-led').style.display = 'none';
+                        document.getElementById('modal-terrain').style.display = 'flex'; 
+                    }, 1000);
+                } else if (currentScenario === 'feu_di') {
+                    setTimeout(() => { 
+                        document.getElementById('modal-img').src = '1000027817.jpg';
+                        document.getElementById('modal-desc').innerText = "Levée de doute : La LED rouge du détecteur clignote. Fausse alerte.";
+                        document.getElementById('modal-led').style.display = 'block';
+                        document.getElementById('modal-led').style.bottom = '15%'; 
+                        document.getElementById('modal-led').style.left = '48%';
+                        document.getElementById('modal-terrain').style.display = 'flex'; 
+                    }, 1000);
+                } else if (currentScenario === 'derangement') {
+                    alarmLine2 = "Saisir code pour acquitter"; renderLCD();
+                    step = 2; 
+                }
+            }
+            if(action === 'rearmement' && step === 3) {
+                document.getElementById('led-sdi-rearmement').classList.add('yellow');
+                alarmLine2 = "Saisir code 2222"; renderLCD();
+                step = 4; 
+            }
+        }
 
-      const x = gridX0 + (a - range.start) * pxPerMin;
-      const w = (d - a) * pxPerMin;
+        function resoudreTerrain() {
+            document.getElementById('modal-terrain').style.display = 'none';
+            step = 3; 
+            alarmLine2 = "Prêt au réarmement"; renderLCD();
+        }
 
-      const yRow = gridY0 + row*rowH;
-      const y = yRow + barYInset;
+        function pressCmsi(key) {
+            initAudio();
+            cmsiInput += key;
+            if(cmsiInput === "ABCD") { isNiveau2 = true; document.getElementById('led-cmsi-niv2').style.background = 'var(--led-yellow)'; cmsiInput = ""; }
+            if(cmsiInput.length >= 4) { cmsiInput = ""; }
+        }
 
-      const fill = (t.color && t.color !== "auto") ? t.color : autoColor(i);
+        function actionCmsi(action) {
+            initAudio();
+            if (!isNiveau2) { alert("CMSI Verrouillé (Niveau 2 requis - Code ABCD)."); return; }
+            
+            if (action === 'arret' && evacTimeLeft === 0) { 
+                document.getElementById('evac-banner').style.display = 'none'; 
+                stopEvacSiren(); 
+                alert("Sirènes d'évacuation arrêtées définitivement."); 
+            }
+            else if (action === 'arret') { 
+                alert(`Action Refusée : Temporisation de 5 min incompressible en cours (${evacTimeLeft}s restantes).`); 
+            }
+            if (action === 'rearmement' && evacTimeLeft === 0) { 
+                alert("Système totalement réarmé et en veille !"); 
+                location.reload(); 
+            } else if (action === 'rearmement') {
+                alert("Impossible de réarmer : attendez la fin de l'alarme d'évacuation.");
+            }
+        }
 
-      // bar
-      svg.appendChild(svgEl("rect", {
-        x, y, width:w, height:barH,
-        rx: 6, ry: 6,
-        fill, opacity: 0.92
-      }));
-
-      // outline
-      svg.appendChild(svgEl("rect", {
-        x, y, width:w, height:barH,
-        rx: 6, ry: 6,
-        fill:"none", stroke:"rgba(0,0,0,.25)"
-      }));
-
-      // label
-      const label = `${t.no || ""} ${t.arr}–${t.dep}`.trim();
-      // Put label only if bar wide enough
-      if(w >= 60){
-        svg.appendChild(svgText(x + 6, y + 15, label, { "font-size":"11", "font-weight":"700", fill:"#fff" }));
-      } else {
-        // tiny bars: show a small marker + tooltip
-        const dotX = x + Math.max(4, w/2);
-        svg.appendChild(svgEl("circle", { cx: dotX, cy: y + barH/2, r: 3, fill:"#fff" }));
-      }
-
-      // tooltip
-      const titleEl = svgEl("title", {});
-      titleEl.textContent = `Train ${t.no || ""}\nVoie ${t.track}\nArr ${t.arr} / Dep ${t.dep}`;
-      svg.lastChild.appendChild(titleEl); // attach to last drawn element
-    });
-
-    // Legend mini
-    svg.appendChild(svgText(14, height - 10, "Impression : A3 paysage (marges 10mm).", { "font-size":"11", fill:"#444" }));
-
-    els.svgHost.innerHTML = "";
-    els.svgHost.appendChild(svg);
-  }
-
-  function getCSS(varName){
-    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-  }
-
-  function svgEl(tag, attrs){
-    const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
-    for(const [k,v] of Object.entries(attrs || {})) el.setAttribute(k, String(v));
-    return el;
-  }
-  function svgText(x,y,text,attrs){
-    const t = svgEl("text", { x, y, ...attrs });
-    t.textContent = text;
-    return t;
-  }
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"']/g, ch => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-    }[ch]));
-  }
-
-  // Events
-  els.addBtn.addEventListener("click", () => {
-    const no = els.trainNo.value.trim();
-    const track = els.track.value;
-    const arr = els.arr.value;
-    const dep = els.dep.value;
-    if(!track || !arr || !dep){
-      alert("Voie + arrivée + départ sont obligatoires.");
-      return;
-    }
-    trains.push({
-      no, track, arr, dep,
-      color: els.color.value || "auto"
-    });
-    save();
-    // Keep train number for faster entry? up to you. We'll clear times only.
-    els.arr.value = arr;
-    els.dep.value = dep;
-    render();
-  });
-
-  els.clearBtn.addEventListener("click", () => {
-    if(confirm("Tout effacer ?")){
-      trains = [];
-      save();
-      render();
-    }
-  });
-
-  els.demoBtn.addEventListener("click", () => {
-    trains = [
-      { no:"TR 1", track:"B", arr:"09:04", dep:"09:08", color:"auto" },
-      { no:"TR 2", track:"B", arr:"09:06", dep:"09:20", color:"#d73a49" },
-      { no:"TR 3", track:"T6", arr:"07:10", dep:"07:55", color:"auto" },
-      { no:"TR 4", track:"A", arr:"23:10", dep:"00:25", color:"auto" },
-    ];
-    save(); render();
-  });
-
-  els.scale.addEventListener("change", render);
-  els.rangeStart.addEventListener("change", render);
-  els.rangeEnd.addEventListener("change", render);
-
-  els.p1.addEventListener("click", () => { els.rangeStart.value="04:00"; els.rangeEnd.value="12:00"; render(); });
-  els.p2.addEventListener("click", () => { els.rangeStart.value="20:00"; els.rangeEnd.value="04:00"; render(); });
-  els.p3.addEventListener("click", () => { els.rangeStart.value="22:00"; els.rangeEnd.value="20:00"; render(); });
-
-  // Initial render
-  render();
-})();
-</script>
+        // Initialisation de base
+        renderLCD();
+    </script>
 </body>
 </html>
