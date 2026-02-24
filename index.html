@@ -601,11 +601,21 @@
         }
 
         function pressCmsi(key) {
-            initAudio();
-            cmsiInput += key;
-            if(cmsiInput === "ABCD") { isNiveau2 = true; document.getElementById('led-cmsi-niv2').style.background = 'var(--led-yellow)'; cmsiInput = ""; }
-            if(cmsiInput.length >= 4) { cmsiInput = ""; }
-        }
+    initAudio();
+    cmsiInput += key;
+
+    // Conserve dynamiquement uniquement les 4 dernières frappes
+    if (cmsiInput.length > 4) {
+        cmsiInput = cmsiInput.slice(-4);
+    }
+
+    // Vérifie si la séquence actuelle correspond au code
+    if (cmsiInput === "ABCD") {
+        isNiveau2 = true;
+        document.getElementById('led-cmsi-niv2').style.background = 'var(--led-yellow)';
+        cmsiInput = ""; // On réinitialise uniquement après un succès
+    }
+}
 
         function actionCmsi(action) {
             initAudio();
