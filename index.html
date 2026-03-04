@@ -25,83 +25,40 @@
 
         #evac-banner { display: none; background: #e74c3c; color: white; width: 1000px; padding: 15px 0; text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 10px; border-radius: 5px; animation: flash 1s infinite; position: relative; }
         @keyframes flash { 0%, 100% { background: #e74c3c; } 50% { background: #c0392b; } }
-        #skip-time { position: absolute; right: 20px; top: 15px; font-size: 12px; padding: 5px; cursor: pointer; background: black; color: white; border: none; }
 
         #ssi-container { display: none; width: 1000px; flex-direction: column; gap: 10px; }
 
-        /* ================= SDI PANEL ================= */
-        #sdi-panel { background-color: var(--sdi-bg); border: 2px solid #333; height: 420px; position: relative; border-radius: 5px; color: black; box-shadow: inset 0 0 20px rgba(0,0,0,0.1); }
+        /* SDI PANEL */
+        #sdi-panel { background-color: var(--sdi-bg); border: 2px solid #333; height: 420px; position: relative; border-radius: 5px; color: black; }
         .feu-indicator { position: absolute; top: 70px; left: 40px; border: 2px solid #555; padding: 10px 25px; font-weight: bold; font-size: 20px; background: #ccc; color: var(--led-off); }
-        .sdi-leds-left { position: absolute; bottom: 30px; left: 30px; display: flex; flex-direction: column; gap: 15px; }
-        .led-row { display: flex; align-items: center; font-size: 14px; font-weight: bold; }
-        .led-box { width: 16px; height: 16px; border: 1px solid #333; background: var(--led-off); margin-right: 15px; }
+        .btn-sdi-label { background: var(--btn-blue); color: white; border: 1px solid #333; padding: 6px 15px; font-size: 13px; font-weight: bold; width: 110px; text-align: center; cursor: pointer;}
+        .led-box { width: 16px; height: 16px; border: 1px solid #333; background: var(--led-off); margin-right: 15px; border-radius: 50%;}
         .led-box.yellow { background: var(--led-yellow); box-shadow: 0 0 10px var(--led-yellow); }
-        .led-box.green { background: var(--led-green); box-shadow: 0 0 10px var(--led-green); }
-        .btn-sdi-label { background: var(--btn-blue); color: white; border: 1px solid #333; padding: 6px 15px; font-size: 13px; font-weight: bold; width: 110px; text-align: center;}
         
         #sdi-lcd-container { position: absolute; top: 40px; left: 230px; width: 420px; }
-        #sdi-lcd { background-color: var(--lcd-green); border: 4px solid #222; height: 160px; font-family: 'Courier New', monospace; display: flex; flex-direction: column; position: relative; overflow: hidden;}
-        .lcd-header { display: flex; justify-content: space-between; background: #000; color: #fff; padding: 2px 10px; font-size: 12px; font-weight: bold;}
-        .lcd-body { flex: 1; padding: 10px; font-size: 14px; font-weight: bold; display: flex; flex-direction: column; justify-content: center; color: black;}
-        .lcd-softlabels { display: flex; justify-content: space-between; position: absolute; bottom: 0; width: 100%; background: #000;}
-        .softlabel { flex: 1; text-align: center; color: white; font-size: 11px; padding: 4px 2px; border-right: 1px solid #333; line-height: 1.1;}
-        .softlabel:last-child { border-right: none; }
-        .softkeys-container { display: flex; justify-content: space-between; width: 380px; margin: 10px auto 0 auto; padding: 0 10px;}
-        .softkey-btn { width: 25px; height: 25px; border-radius: 50%; background: var(--btn-blue); border: 1px solid #222; cursor: pointer; box-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
-        .softkey-btn:active { transform: scale(0.9); }
-        .os-menu-title { font-size: 14px; margin-bottom: 5px; text-decoration: underline; color: black; }
-        .os-list { list-style: none; padding: 0; margin: 0; font-size: 13px; line-height: 1.5; color: black; }
-        .os-list li { padding: 2px 5px; }
-        .os-list li.selected { background: #000; color: var(--lcd-green) !important; }
-
-        /* Croix Directionnelle avec Chevrons */
-        #sdi-nav-cross { position: absolute; top: 50px; left: 680px; width: 80px; height: 80px; border-radius: 50%; background: var(--btn-blue); border: 2px solid #222; display: flex; justify-content: center; align-items: center; }
-        .nav-btn { position: absolute; width: 30px; height: 30px; cursor: pointer; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 20px; transition: 0.1s; }
-        .nav-btn:active { transform: scale(0.8); }
-        .nav-up { top: 0px; } .nav-up::after { content: "▲"; }
-        .nav-down { bottom: 0px; } .nav-down::after { content: "▼"; }
-        .nav-left { left: 0px; } .nav-left::after { content: "◀"; }
-        .nav-right { right: 0px; } .nav-right::after { content: "▶"; }
-
-        .menu-icon-btn { position: absolute; top: 20px; right: 100px; width: 30px; height: 30px; border-radius: 50%; background: var(--btn-blue); border: 1px solid #222; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 16px; cursor: pointer; }
-        #sdi-numpad { position: absolute; top: 60px; right: 50px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .num-key { width: 32px; height: 32px; border-radius: 50%; background: var(--btn-blue); color: white; font-weight: bold; border: 1px solid #222; cursor: pointer; font-size: 14px;}
-        .num-key:active { transform: scale(0.9); }
-        .sdi-actions-bottom { position: absolute; bottom: 30px; right: 280px; display: flex; flex-direction: column; gap: 15px; }
-        .action-row { display: flex; align-items: center; justify-content: flex-end; }
-        .led-circle { width: 16px; height: 16px; border-radius: 50%; border: 1px solid #333; background: var(--led-off); margin-right: 15px;}
-        .led-circle.yellow { background: var(--led-yellow); box-shadow: 0 0 10px var(--led-yellow); }
+        #sdi-lcd { background-color: var(--lcd-green); border: 4px solid #222; height: 160px; font-family: 'Courier New', monospace; position: relative; overflow: hidden;}
+        .lcd-header { display: flex; justify-content: space-between; background: #000; color: #fff; padding: 2px 10px; font-size: 12px; }
+        .lcd-body { padding: 10px; font-size: 14px; font-weight: bold; color: black; text-align: center; }
         
-        .signature { position: absolute; bottom: 5px; left: 10px; font-size: 8px; color: #555; font-family: Arial, sans-serif; font-weight: normal; }
+        #sdi-numpad { position: absolute; top: 60px; right: 50px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .num-key { width: 32px; height: 32px; border-radius: 50%; background: var(--btn-blue); color: white; font-weight: bold; border: 1px solid #222; cursor: pointer; }
 
-        /* ================= CMSI PANEL COMPLET ================= */
+        /* CMSI PANEL */
         #cmsi-panel { background-color: var(--cmsi-bg); border: 2px solid #333; height: 450px; display: flex; padding: 10px; gap: 10px; border-radius: 5px; }
         .cmsi-col-left { flex: 1.2; background: var(--cmsi-panel); border: 2px solid #222; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
-        .cmsi-block { display: flex; align-items: center; background: transparent; }
-        .cmsi-label { background: var(--btn-blue); color: white; padding: 6px; font-size: 12px; flex: 1; border: 1px solid #111; font-weight: bold; }
+        .cmsi-block { display: flex; align-items: center; }
+        .cmsi-label { background: var(--btn-blue); color: white; padding: 6px; font-size: 11px; flex: 1; border: 1px solid #111; font-weight: bold; text-align: center; }
         .cmsi-led { width: 12px; height: 12px; border-radius: 50%; border: 1px solid #111; background: var(--led-off); margin-right: 10px; }
         .cmsi-btn-oval { width: 45px; height: 25px; border-radius: 12px; background: var(--btn-blue); border: 1px solid #111; cursor: pointer; display: flex; justify-content: center; align-items: center; color: white; margin-left: 10px; }
         .cmsi-btn-oval.red { background: var(--led-red); }
-        .niveau2-box { border: 1px solid #333; padding: 5px; display: flex; flex-direction: column; }
-        .niv2-keys { display: flex; justify-content: center; gap: 10px; margin-top: 5px; }
-        .niv2-key { width: 30px; height: 30px; border-radius: 50%; background: var(--btn-blue); color: white; font-weight: bold; border: 1px solid #111; cursor: pointer;}
-        .cmsi-col-mid { flex: 1.5; background: var(--cmsi-panel); border: 2px solid #222; padding: 10px; display: flex; flex-direction: column; gap: 5px; }
-        .cmsi-lcd-fake { height: 120px; background: #ddd; border: 2px solid #222; margin-bottom: 10px; }
-        .uga-row { display: flex; align-items: center; }
-        .uga-leds { display: flex; flex-direction: column; gap: 3px; margin-right: 5px; }
-        .uga-led { width: 10px; height: 10px; border-radius: 50%; border: 1px solid #111; background: var(--led-off); }
-        .uga-label { flex: 1; background: #5ab946; border: 1px solid #222; text-align: center; font-size: 12px; padding: 8px 0; font-weight: bold; color: white; }
-        .cmsi-col-right { flex: 1.2; background: var(--cmsi-panel); border: 2px solid #222; padding: 10px; display: flex; align-items: center; justify-content: center; }
-        .cmsi-defilement { width: 100%; height: 100%; background: #eee; border: 1px solid #333; display: flex; align-items: center; justify-content: center; color: #555; }
-        
+
         /* MODAL TERRAIN */
-        #modal-terrain { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        #modal-terrain { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: white; color: black; padding: 30px; border-radius: 8px; text-align: center; max-width: 500px; border: 5px solid #e74c3c; }
         .modal-img-container { position: relative; display: inline-block; margin: 15px 0; }
-        .modal-img-container img { max-width: 250px; border-radius: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .blinking-led { display: none; position: absolute; width: 15px; height: 15px; background: red; border-radius: 50%; box-shadow: 0 0 15px red; animation: blink 0.5s infinite; }
+        .modal-img-container img { max-width: 250px; border-radius: 5px; }
+        .blinking-led { position: absolute; width: 12px; height: 12px; background: red; border-radius: 50%; box-shadow: 0 0 10px red; animation: blink 0.5s infinite; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
-        .btn-action { padding: 10px 20px; background: #e74c3c; color: white; border: none; cursor: pointer; font-size: 16px; border-radius: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -109,536 +66,289 @@
     <button id="btn-retour" onclick="location.reload()">⬅ Retour au Menu</button>
 
     <div id="menu">
-        <h2>Simulateur SSI - SNCF Bayonne</h2>
+        <h2>Simulateur SSI Siemens - Gare de Bayonne</h2>
+        <p><i>Cycle d'évacuation 5min autonome & Levée de doute corrigée</i></p>
         <button class="btn-menu btn-normal" onclick="startScenario('normal')">Fonctionnement Normal</button>
-        <button class="btn-menu btn-derangement" onclick="startScenario('derangement')">Dérangement (Aléatoire)</button>
-        <button class="btn-menu btn-feu" onclick="startScenario('feu_dm')">Feu : Déclencheur Manuel</button>
-        <button class="btn-menu btn-feu" onclick="startScenario('feu_di')">Feu : Détecteur Automatique</button>
+        <button class="btn-menu btn-feu" onclick="startScenario('feu_dm')">🔥 Alarme : Déclencheur Manuel</button>
+        <button class="btn-menu btn-feu" onclick="startScenario('feu_di')">🔥 Alarme : Détecteur Optique</button>
     </div>
 
-    <div id="evac-banner">
-        ALARME GÉNÉRALE - ÉVACUATION EN COURS (<span id="evac-timer">05:00</span>)
-        <button id="skip-time" onclick="skipTimer()">Passer les 5 min</button>
-    </div>
+    <div id="evac-banner">⚠ ALARME GÉNÉRALE - ÉVACUATION EN COURS (<span id="evac-timer">05:00</span>)</div>
 
     <div id="ssi-container">
         <div id="sdi-panel">
             <div class="feu-indicator" id="sdi-feu-text">FEU</div>
-            
-            <div class="sdi-leds-left">
-                <div class="led-row"><div class="led-box" id="led-sdi-derang-main"></div><div class="btn-sdi-label">DÉRANGEMENT</div></div>
-                <div class="led-row"><div class="led-box" id="led-sdi-hs"></div><div class="btn-sdi-label">Hors service</div></div>
-                <div class="led-row"><div class="led-box"></div><div class="btn-sdi-label">Essai</div></div>
-                <div class="led-row">
-                    <div style="display:flex; flex-direction:column; gap:2px;"><div class="led-box green" id="led-sdi-tension"></div><div class="led-box"></div></div>
-                    <div class="btn-sdi-label" style="font-size:10px; line-height: 1.1;">Sous-tension<br>Système H.S.</div>
-                </div>
-            </div>
-
             <div id="sdi-lcd-container">
                 <div id="sdi-lcd">
-                    <div class="lcd-header">
-                        <span id="lcd-status">SIEMENS</span><span id="lcd-time">12:00</span>
-                    </div>
-                    <div class="lcd-body" id="lcd-main-content"></div>
-                    <div class="lcd-softlabels">
-                        <div class="softlabel" id="lbl-soft-1">Exécuter<br>commandes</div>
-                        <div class="softlabel" id="lbl-soft-2">Passer en<br>affichage étendu</div>
-                        <div class="softlabel" id="lbl-soft-3">Plus<br>Options</div>
-                    </div>
-                </div>
-                <div class="softkeys-container">
-                    <div class="softkey-btn" onclick="pressSoftkey(1)"></div>
-                    <div class="softkey-btn" onclick="pressSoftkey(2)"></div>
-                    <div class="softkey-btn" onclick="pressSoftkey(3)"></div>
+                    <div class="lcd-header"><span>SIEMENS</span><span id="lcd-time">--:--</span></div>
+                    <div class="lcd-body" id="lcd-main-content">SYSTÈME NORMAL</div>
                 </div>
             </div>
 
-            <div id="sdi-nav-cross">
-                <div class="nav-btn nav-up" onclick="navMove(-1)"></div>
-                <div class="nav-btn nav-down" onclick="navMove(1)"></div>
-                <div class="nav-btn nav-left" onclick="navLevel(-1)"></div>
-                <div class="nav-btn nav-right" onclick="navLevel(1)"></div>
-            </div>
-
-            <div class="menu-icon-btn" onclick="openMenu()">☰</div>
             <div id="sdi-numpad">
                 <button class="num-key" onclick="pressNumpad('1')">1</button><button class="num-key" onclick="pressNumpad('2')">2</button><button class="num-key" onclick="pressNumpad('3')">3</button>
                 <button class="num-key" onclick="pressNumpad('4')">4</button><button class="num-key" onclick="pressNumpad('5')">5</button><button class="num-key" onclick="pressNumpad('6')">6</button>
                 <button class="num-key" onclick="pressNumpad('7')">7</button><button class="num-key" onclick="pressNumpad('8')">8</button><button class="num-key" onclick="pressNumpad('9')">9</button>
-                <button class="num-key" onclick="pressNumpad('*')">*</button><button class="num-key" onclick="pressNumpad('0')">0</button><button class="num-key" onclick="pressNumpad('#')">#</button>
-                <button class="num-key" onclick="pressNumpad('C')" style="grid-column: 1 / span 2; width: auto; border-radius: 15px;">C</button><button class="num-key" onclick="pressNumpad('OK')">ok</button>
+                <button class="num-key" onclick="pressNumpad('C')">C</button><button class="num-key" onclick="pressNumpad('0')">0</button><button class="num-key" onclick="pressNumpad('OK')">ok</button>
             </div>
 
-            <div class="sdi-actions-bottom">
-                <div class="action-row"><div class="led-circle" id="led-sdi-arret"></div><button class="btn-sdi-label" onclick="actionSdi('arret')">Arrêt signal sonore</button></div>
-                <div class="action-row"><div class="led-circle" id="led-sdi-rearmement"></div><button class="btn-sdi-label" onclick="actionSdi('rearmement')">Réarmement</button></div>
+            <div style="position:absolute; bottom:30px; right:40px; display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; align-items:center;"><div class="led-box" id="led-sdi-buzzer"></div><button class="btn-sdi-label" onclick="actionSdi('arret_sonore')">Arrêt sonore</button></div>
+                <div style="display:flex; align-items:center;"><div class="led-box" id="led-sdi-rearm"></div><button class="btn-sdi-label" onclick="actionSdi('rearmement')">Réarmement</button></div>
             </div>
-            
-            <div class="signature">Ludo Klein V1</div>
         </div>
 
         <div id="cmsi-panel">
             <div class="cmsi-col-left">
-                <div class="cmsi-block"><div class="cmsi-led" style="background:var(--led-green);"></div><div class="cmsi-label">Sous tension</div></div>
-                
-                <div class="niveau2-box">
-                    <div class="cmsi-block"><div class="cmsi-led" id="led-cmsi-niv2"></div><div class="cmsi-label" style="text-align:center;">Niveau 2</div></div>
-                    <div class="niv2-keys">
-                        <button class="niv2-key" onclick="pressCmsi('A')">A</button><button class="niv2-key" onclick="pressCmsi('B')">B</button>
-                        <button class="niv2-key" onclick="pressCmsi('C')">C</button><button class="niv2-key" onclick="pressCmsi('D')">D</button>
-                    </div>
+                <div class="cmsi-block">
+                    <div class="cmsi-led" id="led-cmsi-niv2"></div>
+                    <div class="cmsi-label">NIVEAU 2</div>
                 </div>
-
-                <div class="cmsi-block" style="margin-top:10px;">
-                    <div style="display:flex; flex-direction:column; margin-right:10px;"><div class="cmsi-led"></div><div class="cmsi-led" style="margin-top:5px;"></div></div>
-                    <div style="display:flex; flex-direction:column; flex:1;"><div class="cmsi-label" style="font-size:10px;">Défaut secteur</div><div class="cmsi-label" style="font-size:10px; margin-top:2px;">Défaut batterie</div></div>
-                    <div class="cmsi-label" style="margin-left:5px; text-align:center;">Arrêt signal<br>sonore</div><div class="cmsi-btn-oval" onclick="actionCmsi('arret')">🔇</div>
+                <div style="display:flex; gap:5px; justify-content:center;">
+                    <button class="niv2-key cmsi-btn-oval" onclick="pressCmsi('A')">A</button><button class="niv2-key cmsi-btn-oval" onclick="pressCmsi('B')">B</button>
+                    <button class="niv2-key cmsi-btn-oval" onclick="pressCmsi('C')">C</button><button class="niv2-key cmsi-btn-oval" onclick="pressCmsi('D')">D</button>
                 </div>
-
-                <div class="cmsi-block"><div class="cmsi-led"></div><div class="cmsi-label" style="text-align:center; font-size:10px;">Défaut système</div><div class="cmsi-label" style="margin-left:5px; text-align:center; font-size:10px;">Test signalisation</div><div class="cmsi-btn-oval"></div></div>
-                <div class="cmsi-block" style="justify-content:flex-end;"><div class="cmsi-label" style="text-align:center;">Réarmement</div><div class="cmsi-btn-oval" onclick="actionCmsi('rearmement')">↩</div></div>
-                <div class="cmsi-block"><div class="cmsi-led"></div><div class="cmsi-label" style="text-align:center; font-size:10px;">Défaut liaison SDI/CMSI</div><div class="cmsi-label" style="margin-left:5px; text-align:center; font-size:10px; flex:0.3;">Bilan</div><div class="cmsi-btn-oval"></div></div>
-                
+                <hr style="width:100%; border:0.5px solid #444;">
+                <div class="cmsi-block">
+                    <div class="cmsi-led" id="led-cmsi-alarme"></div>
+                    <div class="cmsi-label" style="background:var(--led-red);">ALARME</div>
+                </div>
+                <div class="cmsi-block">
+                    <div class="cmsi-label">Arrêt signal sonore CMSI</div>
+                    <div class="cmsi-btn-oval" onclick="actionCmsi('arret_sonore')">🔇</div>
+                </div>
+                <div class="cmsi-block">
+                    <div class="cmsi-label">Acquittement processus (A)</div>
+                    <div class="cmsi-btn-oval" onclick="actionCmsi('acquittement')">A</div>
+                </div>
+                <div class="cmsi-block">
+                    <div class="cmsi-label">Réarmement CMSI</div>
+                    <div class="cmsi-btn-oval" onclick="actionCmsi('rearmement')">↩</div>
+                </div>
                 <div class="cmsi-block" style="margin-top:20px;">
-                    <div style="display:flex; flex-direction:column; margin-right:10px;"><div class="cmsi-led" id="led-evac-1"></div><div class="cmsi-led" style="margin-top:5px;"></div></div>
-                    <div style="display:flex; flex-direction:column; flex:1;"><div class="cmsi-label" style="font-size:10px;">Evacuation générale</div><div class="cmsi-label" style="font-size:10px; margin-top:2px;">Alarme</div></div>
-                    <div class="cmsi-label" style="margin-left:5px; text-align:center; font-size:10px;">Commande<br>évacuation</div><div class="cmsi-btn-oval red"></div>
+                    <div class="cmsi-led" id="led-evac-1"></div>
+                    <div class="cmsi-label" style="font-size:10px; cursor:pointer;" title="Maintenez 3s">Commande évacuation (3s)</div>
+                    <div class="cmsi-btn-oval red" onmousedown="startEvacHold()" onmouseup="stopEvacHold()" onmouseleave="stopEvacHold()" ontouchstart="startEvacHold()" ontouchend="stopEvacHold()"></div>
                 </div>
             </div>
-
-            <div class="cmsi-col-mid">
-                <div class="cmsi-lcd-fake"></div>
-                <div class="uga-row"><div class="uga-leds"><div class="uga-led"></div><div class="uga-led"></div><div class="uga-led"></div></div><div class="uga-label">Désenfumage HALL GARE</div><div class="cmsi-btn-oval red"></div></div>
-                <div class="uga-row"><div class="uga-leds"><div class="uga-led"></div><div class="uga-led"></div><div class="uga-led"></div></div><div class="uga-label">Désenfumage RELAY</div><div class="cmsi-btn-oval red"></div></div>
-                <div class="uga-row"><div class="uga-leds"><div class="uga-led"></div><div class="uga-led"></div><div class="uga-led"></div></div><div class="uga-label" style="background:white;"></div></div>
-                <div class="uga-row"><div class="uga-leds"><div class="uga-led"></div><div class="uga-led"></div><div class="uga-led"></div></div><div class="uga-label" style="background:white;"></div></div>
+            <div class="cmsi-col-left" style="background:#444; justify-content:center; align-items:center;">
+                <p style="font-size:10px;">ZONE DE MISE EN SÉCURITÉ</p>
+                <div class="cmsi-label" style="background:white; color:black; width:80%;">HALL GARE<br>DÉSENFUMAGE</div>
             </div>
-
-            <div class="cmsi-col-right"><div class="cmsi-defilement">Défilement alarmes</div></div>
         </div>
     </div>
 
     <div id="modal-terrain">
         <div class="modal-content">
             <h2 id="modal-title">Levée de Doute</h2>
-            <p id="modal-desc" style="font-weight:bold;"></p>
+            <p id="modal-desc"></p>
             <div class="modal-img-container">
-                <img src="" alt="Equipement" id="modal-img">
-                <div id="modal-led" class="blinking-led"></div>
+                <img src="" id="modal-img">
+                <div class="blinking-led" id="modal-led"></div>
             </div>
-            <br><button class="btn-action" onclick="resoudreTerrain()">Valider l'intervention terrain</button>
+            <br><button onclick="validerTerrain()" style="padding:10px; cursor:pointer; font-weight:bold;">Intervention terminée</button>
         </div>
     </div>
 
     <script>
-        // --- DONNEES BAYONNE ---
-        const toutesZones = ["ZDA 1 CAVE TOUR SUD", "ZDA 2 RDC ESCALE", "ZDA 5 RDC SALLE APPAREILLAGE", "ZDA 10 COMBLES HORLOGE", "ZDM 102 DECL. MANUELS RDC"];
-        let zonesHS = []; 
-
-        // --- GESTION AUDIO API ---
-        let audioCtx;
-        let sdiBuzzerOsc, sdiBuzzerInterval;
-        let evacSirenOsc, evacSirenInterval;
-
-        function initAudio() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-        }
-
-        function playSdiBuzzer(type) {
-            initAudio(); stopSdiBuzzer(); 
-            sdiBuzzerOsc = audioCtx.createOscillator();
-            let gainNode = audioCtx.createGain();
-            sdiBuzzerOsc.type = 'square';
-            sdiBuzzerOsc.connect(gainNode); gainNode.connect(audioCtx.destination);
-            
-            if (type === 'continu') { 
-                sdiBuzzerOsc.frequency.setValueAtTime(800, audioCtx.currentTime);
-                gainNode.gain.value = 0.05;
-            } else if (type === 'discontinu') { 
-                sdiBuzzerOsc.frequency.setValueAtTime(1000, audioCtx.currentTime);
-                let isPlaying = false;
-                sdiBuzzerInterval = setInterval(() => {
-                    isPlaying = !isPlaying; gainNode.gain.value = isPlaying ? 0.05 : 0;
-                }, 400); 
-            }
-            sdiBuzzerOsc.start();
-        }
-
-        function stopSdiBuzzer() {
-            if(sdiBuzzerInterval) clearInterval(sdiBuzzerInterval);
-            if(sdiBuzzerOsc) { try { sdiBuzzerOsc.stop(); } catch(e){} sdiBuzzerOsc.disconnect(); sdiBuzzerOsc = null; }
-        }
-
-        function playEvacSiren() {
-            initAudio(); if(evacSirenOsc) stopEvacSiren();
-            evacSirenOsc = audioCtx.createOscillator();
-            let gainNode = audioCtx.createGain();
-            evacSirenOsc.type = 'square'; 
-            evacSirenOsc.connect(gainNode); gainNode.connect(audioCtx.destination); gainNode.gain.value = 0.05; 
-            evacSirenOsc.start();
-            
-            let isHighPitch = true;
-            evacSirenInterval = setInterval(() => {
-                evacSirenOsc.frequency.setValueAtTime(isHighPitch ? 544 : 440, audioCtx.currentTime);
-                isHighPitch = !isHighPitch;
-            }, 500); 
-        }
-
-        function stopEvacSiren() {
-            if(evacSirenInterval) clearInterval(evacSirenInterval);
-            if(evacSirenOsc) { try { evacSirenOsc.stop(); } catch(e){} evacSirenOsc.disconnect(); evacSirenOsc = null; }
-        }
-
-        // --- ETATS DU SYSTEME OS SIEMENS ---
-        let lcdMode = 'NORMAL'; 
-        let currentMenuNode = null;
-        let menuCursor = 0;
-        let alarmLine1 = "Système Normal";
-        let alarmLine2 = "";
-        let alarmStatus = "SIEMENS";
-        
-        let activeDerangements = []; // Mémoire des défauts
-        let historique = []; // Journal des événements
-
-        const osMenus = {
-            'main': { title: "Menu principal", items: [{label: "1. Résumé des messages", target: 'resume'}, {label: "2. Fonctions", target: 'fonctions'}, {label: "4. Topologie", target: 'topologie'}, {label: "6. Historique", target: 'historique'}] },
-            'resume': { title: "Résumé des messages", items: [{label: "2. Dérangement", target: 'liste_derangements'}, {label: "4. Hors service", target: 'liste_zones_hs_actuelles'}] },
-            'fonctions': { title: "Fonctions", items: [{label: "1. En/Hors", target: 'en_hors'}, {label: "2. Test", target: 'vide'}] },
-            'en_hors': { title: "Choisir catégorie", items: [{label: "1. Zone", target: 'liste_zones_pour_hs'}] },
-            'topologie': { title: "Topologie", items: [{label: "1. Arbre détection", target: 'arbre_det'}] },
-            'arbre_det': { title: "Arbre détection", items: [{label: "1. Site 1", target: 'arbre_bat', isNode: true}] },
-            'arbre_bat': { title: "Bâtiment", items: [{label: "1. Rez-de-chaussée", target: 'arbre_sec', isNode: true}, {label: "2. 1er étage", target: 'arbre_sec', isNode: true}] },
-            'arbre_sec': { title: "Section", items: [{label: "1. Zone 1", target: 'arbre_zone', isNode: true}, {label: "2. Zone 2", target: 'arbre_zone', isNode: true}] },
-            'arbre_zone': { title: "Détecteurs", items: [{label: "1. Détecteur 1", target: 'exec_hors', rawData: "Détecteur 1"}, {label: "2. Détecteur 2", target: 'exec_hors', rawData: "Détecteur 2"}] },
-            'liste_zones_pour_hs': { title: "Sélection Zone (Mise HS)", items: [] },
-            'exec_hors': { title: "Choisir commande", items: [] }, // Peuplé dynamiquement
-            'liste_zones_hs_actuelles': { title: "Zones Hors Service", items: [] },
-            'exec_en': { title: "Choisir commande", items: [] }, // Peuplé dynamiquement
-            'liste_derangements': { title: "Dérangements", items: [] },
-            'historique': { title: "Historique", items: [] },
-            'vide': { title: "Fonction non simulée", items: [] }
-        };
-
-        let currentScenario = '';
-        let step = 0;
+        let step = 0; 
+        let currentScen = '';
         let sdiInput = "";
         let cmsiInput = "";
         let isNiveau2 = false;
-        let evacTimeLeft = 300;
-        let evacTimerInterval;
+        
+        // Variables Evacuation (5 minutes)
+        let evacTimeLeft = 0;
+        let evacInterval = null;
+        let evacHoldTimer = null;
 
-        // --- AFFICHAGE LCD ---
-        function renderLCD() {
-            const body = document.getElementById('lcd-main-content');
-            const l1 = document.getElementById('lbl-soft-1');
-            const l2 = document.getElementById('lbl-soft-2');
-            const l3 = document.getElementById('lbl-soft-3');
+        // Audio
+        let audioCtx, sdiOsc, cmsiOsc, evacOsc;
+
+        function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+        
+        // Buzzer du SDI (grave)
+        function playSdiBuzzer() {
+            initAudio(); stopSdiBuzzer();
+            sdiOsc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            sdiOsc.type = 'square'; sdiOsc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            sdiOsc.connect(gain); gain.connect(audioCtx.destination); gain.gain.value = 0.05;
+            sdiOsc.start();
+        }
+        function stopSdiBuzzer() { if(sdiOsc) { sdiOsc.stop(); sdiOsc = null; } }
+        
+        // Buzzer du CMSI (aigu)
+        function playCmsiBuzzer() {
+            initAudio(); stopCmsiBuzzer();
+            cmsiOsc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            cmsiOsc.type = 'square'; cmsiOsc.frequency.setValueAtTime(2000, audioCtx.currentTime);
+            cmsiOsc.connect(gain); gain.connect(audioCtx.destination); gain.gain.value = 0.03;
+            cmsiOsc.start();
+        }
+        function stopCmsiBuzzer() { if(cmsiOsc) { cmsiOsc.stop(); cmsiOsc = null; } }
+
+        // Sirène Générale d'Evacuation (Autonome)
+        function startEvacuationSiren() {
+            if(evacTimeLeft > 0) return; // Empêche de relancer si déjà en cours
+            initAudio(); stopEvacSiren();
             
-            let now = new Date();
-            document.getElementById('lcd-time').innerText = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
-
-            if (lcdMode === 'NORMAL') {
-                document.getElementById('lcd-status').innerText = alarmStatus;
-                body.innerHTML = `<div style="text-align:center; font-size:20px; color:black;">${alarmLine1}</div><div style="text-align:center; font-weight:normal; font-size:14px; margin-top:10px; color:black;">${alarmLine2}</div>`;
-                l1.innerHTML = "Exécuter<br>commandes"; l2.innerHTML = "Passer en<br>affichage étendu"; l3.innerHTML = "Plus<br>Options";
-            } 
-            else if (lcdMode === 'MENU') {
-                document.getElementById('lcd-status').innerText = "Niveau d'accès 2.1";
-                let html = `<div class="os-menu-title" style="color:black;">${osMenus[currentMenuNode].title}</div><ul class="os-list" style="color:black;">`;
-                let start = Math.max(0, menuCursor - 2); 
-                let end = Math.min(osMenus[currentMenuNode].items.length, start + 4);
-                
-                if(osMenus[currentMenuNode].items.length === 0) { 
-                    html += `<li>(Aucun élément)</li>`; 
-                } else {
-                    for(let i = start; i < end; i++) {
-                        html += `<li class="${i === menuCursor ? 'selected' : ''}">${osMenus[currentMenuNode].items[i].label}</li>`;
-                    }
-                }
-                html += `</ul>`; body.innerHTML = html;
-                
-                if (currentMenuNode === 'consigne') { l1.innerHTML = ""; l2.innerHTML = ""; l3.innerHTML = "Aller En<br>arrière"; }
-                else if (currentMenuNode.startsWith('arbre_')) { l1.innerHTML = "Exécuter<br>Commandes"; l2.innerHTML = "Niveau<br>Inférieur"; l3.innerHTML = "Plus<br>Options"; }
-                else if (currentMenuNode === 'liste_zones_pour_hs' || currentMenuNode === 'liste_zones_hs_actuelles' || currentMenuNode === 'liste_derangements') { l1.innerHTML = "Exécuter<br>Commandes"; l2.innerHTML = "Affichage<br>étendu"; l3.innerHTML = "Quitter <C>"; }
-                else if (currentMenuNode === 'exec_hors' || currentMenuNode === 'exec_en' || currentMenuNode === 'plus_options_alarme' || currentMenuNode === 'plus_options_item') { l1.innerHTML = "Sélectionner"; l2.innerHTML = ""; l3.innerHTML = "Retour <C>"; }
-                else { l1.innerHTML = "Sélectionner"; l2.innerHTML = ""; l3.innerHTML = "Quitter <C>"; }
-            }
+            evacTimeLeft = 300; // 5 minutes incompressibles
+            document.getElementById('evac-banner').style.display = 'block';
+            document.getElementById('led-evac-1').style.background = 'var(--led-red)';
             
-            document.getElementById('led-sdi-hs').classList.toggle('yellow', zonesHS.length > 0);
-            let hasDerangement = activeDerangements.length > 0 || (lcdMode === 'NORMAL' && alarmStatus.includes("DÉRANGEMENT"));
-            document.getElementById('led-sdi-derang-main').classList.toggle('yellow', hasDerangement);
-        }
-
-        function openMenu() { initAudio(); lcdMode = 'MENU'; currentMenuNode = 'main'; menuCursor = 0; renderLCD(); }
-
-        function pressNumpad(key) {
-            initAudio(); 
-            if (key === 'C') { 
-                if (step === 4 || step === 2) { sdiInput = ""; alarmLine2 = "Code: "; renderLCD(); return; }
-                lcdMode = 'NORMAL'; renderLCD(); return; 
-            }
-            if (lcdMode === 'MENU' && key >= '1' && key <= '9') {
-                let items = osMenus[currentMenuNode].items;
-                for(let i=0; i<items.length; i++){
-                    if(items[i].label.startsWith(key + ".")) { menuCursor = i; executeMenuSelection(); break; }
-                }
-            } else if (lcdMode === 'NORMAL' && (step === 4 || step === 2)) {
-                if(key === 'OK') {
-                    if (sdiInput === "2222") {
-                        if (currentScenario === 'derangement' && step === 2) {
-                            alert("Défaut acquitté visuellement. Simulation : Le technicien répare le défaut...");
-                            activeDerangements = []; historique.push("Technicien : Défaut réparé");
-                            location.reload();
-                        } else {
-                            alarmStatus = "SIEMENS"; alarmLine1 = "Système Normal"; alarmLine2 = "";
-                            document.getElementById('sdi-feu-text').style.color = "var(--led-off)";
-                            document.getElementById('led-sdi-derang-main').classList.remove('yellow');
-                            document.getElementById('led-sdi-rearmement').classList.remove('yellow');
-                            document.getElementById('led-sdi-arret').classList.remove('yellow');
-                            step = 5; sdiInput = ""; renderLCD();
-                        }
-                    } else {
-                        sdiInput = ""; alarmLine2 = "Code incorrect !"; renderLCD();
-                        setTimeout(() => { alarmLine2 = "Code: "; renderLCD(); }, 1500);
-                    }
-                } else {
-                    if (sdiInput.length < 4) { sdiInput += key; alarmLine2 = "Code: " + "*".repeat(sdiInput.length); renderLCD(); }
-                }
-            }
-        }
-
-        function navMove(dir) {
-            initAudio();
-            if (lcdMode === 'MENU' && osMenus[currentMenuNode].items.length > 0) {
-                menuCursor += dir;
-                if (menuCursor < 0) menuCursor = 0;
-                if (menuCursor >= osMenus[currentMenuNode].items.length) menuCursor = osMenus[currentMenuNode].items.length - 1;
-                renderLCD();
-            }
-        }
-
-        function navLevel(dir) {
-            initAudio();
-            if (lcdMode === 'MENU') {
-                let items = osMenus[currentMenuNode].items;
-                if(items.length > 0 && items[menuCursor].isNode && dir > 0) { executeMenuSelection(); } 
-                else if (dir < 0) { lcdMode = 'NORMAL'; renderLCD(); } 
-            }
-        }
-
-        function pressSoftkey(index) {
-            initAudio();
-            if (lcdMode === 'NORMAL') {
-                if (index === 3 && (alarmStatus.includes("FEU") || alarmStatus.includes("DÉRANGEMENT"))) {
-                    osMenus['plus_options_alarme'] = { title: "Choix option", items: [{label: "3. Afficher consigne", action: 'CONSIGNE'}, {label: "4. Exécuter commandes", target: 'vide'}] };
-                    lcdMode = 'MENU'; currentMenuNode = 'plus_options_alarme'; menuCursor = 0; renderLCD();
-                }
-            }
-            else if (lcdMode === 'MENU') {
-                let l1 = document.getElementById('lbl-soft-1').innerText;
-                let l2 = document.getElementById('lbl-soft-2').innerText;
-                let l3 = document.getElementById('lbl-soft-3').innerText;
-
-                if (index === 1 && (l1.includes("Sélectionner") || l1.includes("Exécuter"))) executeMenuSelection();
-                if (index === 2 && l2.includes("Niveau")) navLevel(1);
-                if (index === 3 && (l3.includes("Quitter") || l3.includes("Retour") || l3.includes("Aller En"))) { lcdMode = 'NORMAL'; renderLCD(); }
-                if (index === 3 && l3.includes("Plus")) {
-                    osMenus['plus_options_item'] = { title: "Choix option", items: [{label: "3. Exécuter commandes", action: 'FORCE_EXEC'}] };
-                    currentMenuNode = 'plus_options_item'; menuCursor = 0; renderLCD();
-                }
-            }
-        }
-
-        function executeMenuSelection() {
-            let items = osMenus[currentMenuNode].items; if(items.length === 0) return;
-            let selectedItem = items[menuCursor];
-
-            if (selectedItem.action === 'SET_HORS') {
-                let zoneAIsoler = selectedItem.rawData;
-                if(!zonesHS.includes(zoneAIsoler)) {
-                    zonesHS.push(zoneAIsoler);
-                    historique.unshift(`Mise HORS : ${zoneAIsoler}`);
-                    alert(`Commande exécutée : ${zoneAIsoler} est HORS SERVICE.`); 
-                } else {
-                    alert(`Cette zone est déjà HORS SERVICE.`);
-                }
-                lcdMode = 'NORMAL';
-            } 
-            else if (selectedItem.action === 'SET_EN') {
-                let zoneARemetre = selectedItem.rawData;
-                if(zonesHS.includes(zoneARemetre)) {
-                    zonesHS = zonesHS.filter(z => z !== zoneARemetre);
-                    historique.unshift(`Mise EN : ${zoneARemetre}`);
-                    alert(`Commande exécutée : ${zoneARemetre} est EN SERVICE.`); 
-                } else {
-                    alert(`Cette zone est déjà EN SERVICE.`);
-                }
-                lcdMode = 'NORMAL';
-            }
-            else if (selectedItem.action === 'CONSIGNE') {
-                osMenus['consigne'] = { title: "Consigne de sécurité", items: [{label: "- Appliquer procédure", target: null}, {label: "- Evacuer si nécessaire", target: null}] };
-                currentMenuNode = 'consigne'; menuCursor = 0;
-            }
-            else if (selectedItem.action === 'FORCE_EXEC') {
-                currentMenuNode = 'exec_hors'; menuCursor = 0;
-            }
-            else if (selectedItem.target) {
-                let nextNode = selectedItem.target;
+            evacOsc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            evacOsc.type = 'sawtooth';
+            evacOsc.connect(gain); gain.connect(audioCtx.destination); gain.gain.value = 0.04;
+            evacOsc.start();
+            
+            let high = true;
+            evacInterval = setInterval(() => {
+                if(evacOsc) evacOsc.frequency.setValueAtTime(high ? 550 : 440, audioCtx.currentTime);
+                high = !high;
                 
-                // Creation de listes dynamiques pour afficher les bons éléments
-                if (nextNode === 'liste_zones_pour_hs') { 
-                    osMenus[nextNode].items = toutesZones.map((z, i) => ({label: `${i+1}. ${z}`, target: 'exec_hors', rawData: z})); 
+                if(evacTimeLeft > 0) {
+                    evacTimeLeft--;
+                    let m = Math.floor(evacTimeLeft/60); let s = evacTimeLeft%60;
+                    document.getElementById('evac-timer').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+                } else {
+                    stopEvacSiren(); // Fin des 5 minutes
                 }
-                if (nextNode === 'liste_zones_hs_actuelles') { 
-                    osMenus[nextNode].items = zonesHS.map((z, i) => ({label: `${i+1}. ${z}`, target: 'exec_en', rawData: z})); 
-                }
-                if (nextNode === 'liste_derangements') {
-                    osMenus[nextNode].items = activeDerangements.map((d, i) => ({label: `${i+1}. ${d}`, target: 'vide'}));
-                    if(activeDerangements.length === 0) osMenus[nextNode].items = [{label: "Aucun dérangement", target: 'vide'}];
-                }
-                if (nextNode === 'historique') {
-                    osMenus[nextNode].items = historique.map((h, i) => ({label: `${i+1}. ${h}`, target: 'vide'}));
-                    if(historique.length === 0) osMenus[nextNode].items = [{label: "Historique vide", target: 'vide'}];
-                }
-                
-                // Fix: Permet à "1. EN" et "2. HORS" de savoir quelle zone a été sélectionnée
-                if (nextNode === 'exec_hors' || nextNode === 'exec_en') {
-                    let zone = selectedItem.rawData;
-                    osMenus[nextNode].items = [
-                        {label: "1. EN", action: 'SET_EN', rawData: zone}, 
-                        {label: "2. HORS", action: 'SET_HORS', rawData: zone}
-                    ];
-                }
-
-                currentMenuNode = nextNode;
-                menuCursor = 0;
-            }
-            renderLCD();
+            }, 500);
+        }
+        function stopEvacSiren() { 
+            if(evacOsc) { evacOsc.stop(); evacOsc = null; } 
+            clearInterval(evacInterval); 
+            evacTimeLeft = 0;
+            document.getElementById('evac-banner').style.display = 'none';
+            document.getElementById('led-evac-1').style.background = 'var(--led-off)';
         }
 
-        // --- GESTION SCENARIOS ---
+        // Gestion clic long (3s) sur Commande Evacuation Manuelle
+        function startEvacHold() {
+            evacHoldTimer = setTimeout(() => {
+                startEvacuationSiren();
+                alert("Évacuation manuelle déclenchée (Cycle de 5 minutes activé).");
+            }, 3000);
+        }
+        function stopEvacHold() { clearTimeout(evacHoldTimer); }
+
+        // Lancement Scénario
         function startScenario(scen) {
-            initAudio(); 
+            currentScen = scen; 
             document.getElementById('menu').style.display = 'none';
             document.getElementById('ssi-container').style.display = 'flex';
             document.getElementById('btn-retour').style.display = 'block';
-            currentScenario = scen; step = 1;
             
-            if (scen === 'feu_dm' || scen === 'feu_di') {
-                alarmStatus = "001 ALARME FEU"; alarmLine1 = "INCENDIE";
-                alarmLine2 = (scen === 'feu_dm') ? "ZDM 102 DECL. MANUELS RDC" : "ZDA 1 CAVE TOUR SUD";
-                
-                if(zonesHS.includes(alarmLine2)) { alert("⚠️ CETTE ZONE EST HORS SERVICE ! Pour l'exercice, on force le feu."); }
-                
-                document.getElementById('sdi-feu-text').style.color = "var(--led-red)";
-                playSdiBuzzer('discontinu'); playEvacSiren();
-                historique.unshift("ALARME FEU : " + alarmLine2);
-                
-                evacTimeLeft = 300; document.getElementById('evac-banner').style.display = 'block';
-                evacTimerInterval = setInterval(() => {
-                    if(evacTimeLeft > 0) {
-                        evacTimeLeft--;
-                        let m = Math.floor(evacTimeLeft / 60); let s = evacTimeLeft % 60;
-                        document.getElementById('evac-timer').innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-                    } else { stopEvacSiren(); clearInterval(evacTimerInterval); }
-                }, 1000);
-            } 
-            else if (scen === 'derangement') {
-                alarmStatus = "001 DÉRANGEMENT"; alarmLine1 = "Défaut Ligne"; alarmLine2 = "ZDA 5 RDC SALLE APPAREILLAGE";
-                document.getElementById('led-sdi-derang-main').classList.add('yellow');
-                activeDerangements.push("ZDA 5 RDC SALLE APPAREILLAGE"); // Mémorisation du défaut
-                historique.unshift("DÉFAUT : " + alarmLine2);
-                playSdiBuzzer('continu');
-            }
-            else if (scen === 'normal') {
-                alarmStatus = "SIEMENS"; alarmLine1 = "Système Normal"; alarmLine2 = "";
-            }
-            renderLCD();
+            if (scen === 'normal') { step = 0; return; }
+            
+            step = 1;
+            document.getElementById('sdi-feu-text').style.color = 'var(--led-red)';
+            document.getElementById('led-cmsi-alarme').style.background = 'var(--led-red)';
+            document.getElementById('lcd-main-content').innerHTML = (scen === 'feu_dm') ? "001 ALARME FEU<br>ZDM 102 RDC" : "001 ALARME FEU<br>ZDA 1 CAVE";
+            
+            playSdiBuzzer();
+            playCmsiBuzzer();
+            startEvacuationSiren();
         }
 
-        function skipTimer() { evacTimeLeft = 0; document.getElementById('evac-timer').innerText = "00:00"; stopEvacSiren(); }
-
-        function actionSdi(action) {
-            initAudio();
-            if(action === 'arret' && step === 1) {
+        // Actions Pupitres
+        function actionSdi(cmd) {
+            if(cmd === 'arret_sonore' && step === 1) {
                 stopSdiBuzzer(); 
-                document.getElementById('led-sdi-arret').classList.add('yellow');
-                
-                if (currentScenario === 'feu_dm') {
-                    setTimeout(() => { 
-                        document.getElementById('modal-img').src = '1000027816.jpg';
-                        document.getElementById('modal-desc').innerText = "Levée de doute : Réarmement du Déclencheur Manuel.";
-                        document.getElementById('modal-led').style.display = 'none';
-                        document.getElementById('modal-terrain').style.display = 'flex'; 
-                    }, 1000);
-                } else if (currentScenario === 'feu_di') {
-                    setTimeout(() => { 
-                        document.getElementById('modal-img').src = '1000027817.jpg';
-                        document.getElementById('modal-desc').innerText = "Levée de doute : La LED rouge du détecteur clignote. Fausse alerte.";
-                        document.getElementById('modal-led').style.display = 'block';
-                        document.getElementById('modal-led').style.bottom = '15%'; 
-                        document.getElementById('modal-led').style.left = '48%';
-                        document.getElementById('modal-terrain').style.display = 'flex'; 
-                    }, 1000);
-                } else if (currentScenario === 'derangement') {
-                    alarmLine2 = "Saisir code pour acquitter"; renderLCD();
-                    step = 2; 
+                document.getElementById('led-sdi-buzzer').classList.add('yellow');
+                step = 2; 
+                alert("1. Signal sonore SDI arrêté. Coupez maintenant le signal du CMSI.");
+            }
+            if(cmd === 'rearmement') {
+                if(step < 5) { alert("Action impossible : effectuez d'abord la levée de doute sur le terrain."); return; }
+                document.getElementById('lcd-main-content').innerHTML = "SAISIR CODE :";
+                sdiInput = "";
+            }
+        }
+
+        function pressCmsi(k) {
+            initAudio();
+            cmsiInput += k;
+            if(cmsiInput.slice(-4) === "ABCD") {
+                isNiveau2 = true;
+                document.getElementById('led-cmsi-niv2').style.background = 'var(--led-yellow)';
+            }
+        }
+
+        function actionCmsi(cmd) {
+            initAudio();
+            
+            if(cmd === 'arret_sonore') {
+                if (step === 2) {
+                    stopCmsiBuzzer();
+                    step = 3;
+                    alert("2. Buzzer du CMSI arrêté. (Les sirènes d'évacuation, elles, continuent 5 minutes). \n\n3. Veuillez maintenant déverrouiller le Niveau 2 (ABCD) et cliquer sur 'Acquittement processus (A)'.");
+                } else {
+                    stopCmsiBuzzer(); // Coupe le bip s'il sonne hors scenario
                 }
             }
-            if(action === 'rearmement' && step === 3) {
-                document.getElementById('led-sdi-rearmement').classList.add('yellow');
-                alarmLine2 = "Saisir code 2222"; renderLCD();
-                step = 4; 
-            }
-        }
-
-        function resoudreTerrain() {
-            document.getElementById('modal-terrain').style.display = 'none';
-            step = 3; 
-            alarmLine2 = "Prêt au réarmement"; renderLCD();
-        }
-
-        function pressCmsi(key) {
-    initAudio();
-    cmsiInput += key;
-
-    // Conserve dynamiquement uniquement les 4 dernières frappes
-    if (cmsiInput.length > 4) {
-        cmsiInput = cmsiInput.slice(-4);
-    }
-
-    // Vérifie si la séquence actuelle correspond au code
-    if (cmsiInput === "ABCD") {
-        isNiveau2 = true;
-        document.getElementById('led-cmsi-niv2').style.background = 'var(--led-yellow)';
-        cmsiInput = ""; // On réinitialise uniquement après un succès
-    }
-}
-
-        function actionCmsi(action) {
-            initAudio();
-            if (!isNiveau2) { alert("CMSI Verrouillé (Niveau 2 requis - Code ABCD)."); return; }
             
-            if (action === 'arret' && evacTimeLeft === 0) { 
-                document.getElementById('evac-banner').style.display = 'none'; 
-                stopEvacSiren(); 
-                alert("Sirènes d'évacuation arrêtées définitivement."); 
+            if(cmd === 'acquittement') {
+                if(!isNiveau2) { alert("Le CMSI est verrouillé. Entrez le code Niveau 2 (ABCD)."); return; }
+                if(step === 3) {
+                    step = 4;
+                    alert("4. Processus acquitté ! Vous pouvez maintenant vous rendre sur le terrain pour la levée de doute.");
+                    setTimeout(lancerLeveeDoute, 800);
+                }
             }
-            else if (action === 'arret') { 
-                alert(`Action Refusée : Temporisation de 5 min incompressible en cours (${evacTimeLeft}s restantes).`); 
-            }
-            if (action === 'rearmement' && evacTimeLeft === 0) { 
-                alert("Système totalement réarmé et en veille !"); 
-                location.reload(); 
-            } else if (action === 'rearmement') {
-                alert("Impossible de réarmer : attendez la fin de l'alarme d'évacuation.");
+            
+            if(cmd === 'rearmement') {
+                if(!isNiveau2) { alert("Niveau 2 requis."); return; }
+                if(step < 6) { alert("Le SDI doit être réarmé en premier."); return; }
+                
+                alert("CMSI Réarmé. Le système est remis en veille.");
+                if(evacTimeLeft > 0) {
+                    alert(`Attention : L'alarme d'évacuation continuera tout de même de sonner jusqu'à la fin de son cycle (${evacTimeLeft} secondes restantes).`);
+                }
+                
+                // Remise à zéro de l'IHM (hors timer evac)
+                document.getElementById('led-cmsi-alarme').style.background = 'var(--led-off)';
+                step = 0;
             }
         }
 
-        // Initialisation de base
-        renderLCD();
+        function pressNumpad(k) {
+            if(document.getElementById('lcd-main-content').innerText.includes("CODE")) {
+                if(k === 'OK') {
+                    if(sdiInput === "2222") {
+                        document.getElementById('lcd-main-content').innerHTML = "SYSTÈME NORMAL";
+                        document.getElementById('sdi-feu-text').style.color = "var(--led-off)";
+                        document.getElementById('led-sdi-rearm').classList.add('yellow');
+                        step = 6;
+                        alert("SDI Réarmé. Passez au réarmement du CMSI.");
+                    } else { alert("Code erroné"); sdiInput = ""; }
+                } else { sdiInput += k; document.getElementById('lcd-main-content').innerHTML = "CODE: " + "*".repeat(sdiInput.length); }
+            }
+        }
+
+        function lancerLeveeDoute() {
+            document.getElementById('modal-terrain').style.display = 'flex';
+            if(currentScen === 'feu_dm') {
+                document.getElementById('modal-desc').innerText = "Le Déclencheur Manuel a été brisé au RDC.";
+                document.getElementById('modal-img').src = "1000027816.jpg";
+                document.getElementById('modal-led').style.display = 'none';
+            } else {
+                document.getElementById('modal-desc').innerText = "Le détecteur optique en cave clignote (voyant rouge).";
+                document.getElementById('modal-img').src = "1000027817.jpg";
+                document.getElementById('modal-led').style.top = "70%";
+                document.getElementById('modal-led').style.left = "48%";
+            }
+        }
+
+        function validerTerrain() {
+            document.getElementById('modal-terrain').style.display = 'none';
+            step = 5;
+            alert("5. Terrain vérifié. Réarmez maintenant le SDI (Bouton réarmement + Code 2222).");
+        }
     </script>
 </body>
 </html>
+
